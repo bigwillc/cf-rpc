@@ -1,0 +1,9 @@
+## huoqs
+POST http://localhost:8080
+Content-Type: application/json
+
+{
+  "service": "",
+  "method": "findById",
+  "args": [100]
+}
