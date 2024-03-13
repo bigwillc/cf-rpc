@@ -44,6 +44,7 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                    }
                    // 可见性设置成true
                    f.setAccessible(true);
+                   // 往bean 里面注入代理对象
                    f.set(bean, consumer);
                }catch (Exception e){
                    e.printStackTrace();

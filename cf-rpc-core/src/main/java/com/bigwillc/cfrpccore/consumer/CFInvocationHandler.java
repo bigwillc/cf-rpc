@@ -44,7 +44,6 @@ public class CFInvocationHandler implements InvocationHandler {
         RpcResponse rpcResponse = post(rpcRequest);
 
         if (rpcResponse.isStatus()) {
-            // todo 处理基本类型
 
             Object data = rpcResponse.getData();
 
