@@ -38,24 +38,35 @@ public class ProviderBootstrap implements ApplicationContextAware {
     }
 
     private void genInterface(Object x) {
+
+        Arrays.stream((x.getClass().getInterfaces())).forEach(
+                itfer -> {
+                    Method[] methods = itfer.getMethods();
+                    for (Method method : methods){
+                        if(MethodUtils.checkLocalMethod(method)){
+                            continue;
+                        }
+                        createProvider(itfer, x, method);
+                    }
+                }
+        );
+
         // 获取接口 这里默认指支持一个接口
-        // todo 支持多个接口
-        Class<?> itfer = x.getClass().getInterfaces()[0];
-        Method[] methods = itfer.getMethods();
-        for (Method method : methods) {
-            if(MethodUtils.checkLocalMethod(method)){
-                continue;
-            }
-
-            createProvider(itfer, x, method);
-
-            ProviderMeta providerMeta = new ProviderMeta();
-            providerMeta.setMethod(method);
-            providerMeta.setMethodSign(method.getName());
-            providerMeta.setServiceImpl(x);
-            skeleton.add(itfer.getCanonicalName(), providerMeta);
-        }
-//        skeleton.put(itfer.getCanonicalName(), providerMetaList(methods, x));
+//        Class<?> itfer = x.getClass().getInterfaces()[0];
+//        Method[] methods = itfer.getMethods();
+//        for (Method method : methods) {
+//            if(MethodUtils.checkLocalMethod(method)){
+//                continue;
+//            }
+//
+//            createProvider(itfer, x, method);
+//
+//            ProviderMeta providerMeta = new ProviderMeta();
+//            providerMeta.setMethod(method);
+//            providerMeta.setMethodSign(method.getName());
+//            providerMeta.setServiceImpl(x);
+//            skeleton.add(itfer.getCanonicalName(), providerMeta);
+//        }
     }
 
     private void createProvider(Class<?> itfer, Object x, Method method) {
