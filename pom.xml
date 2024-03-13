@@ -22,6 +22,7 @@
         <module>cf-rpc-core</module>
         <module>cf-rpc-demo-api</module>
         <module>cf-rpc-demo-provider</module>
+        <module>cf-rpc-demo-consumer</module>
     </modules>
 
     <build>

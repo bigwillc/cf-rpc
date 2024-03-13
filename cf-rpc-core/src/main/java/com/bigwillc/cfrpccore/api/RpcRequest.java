@@ -6,6 +6,6 @@ import lombok.Data;
 public class RpcRequest {
 
     private String service; // 接口
-    private String method; // 方法 methodSign
+    private String methodSign; // 方法 methodSign
     private Object[] args; // 参数
 }
