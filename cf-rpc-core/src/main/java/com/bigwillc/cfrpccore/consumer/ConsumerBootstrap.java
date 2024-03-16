@@ -1,9 +1,16 @@
 package com.bigwillc.cfrpccore.consumer;
 
 import com.bigwillc.cfrpccore.annotation.CFConsumer;
+import com.bigwillc.cfrpccore.api.LoadBalancer;
+import com.bigwillc.cfrpccore.api.RegistryCenter;
+import com.bigwillc.cfrpccore.api.Router;
+import com.bigwillc.cfrpccore.api.RpcContext;
 import lombok.Data;
+import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.EnvironmentAware;
+import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
@@ -16,13 +23,30 @@ import java.util.Map;
  * @author bigwillc on 2024/3/10
  */
 @Data
-public class ConsumerBootstrap implements ApplicationContextAware {
+public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
     ApplicationContext applicationContext;
+    Environment environment;
 
     private Map<String, Object> stub = new HashMap<>();
 
     public void start(){
+
+        Router router = applicationContext.getBean(Router.class);
+        LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
+        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+
+        RpcContext context = new RpcContext();
+        context.setRouter(router);
+        context.setLoadBalancer(loadBalancer);
+
+//        String urls = environment.getProperty("cfrpc.providers", "");
+//        if (Strings.isEmpty(urls)) {
+//            System.out.println("cfrpc.providers is empty");
+//            throw new RuntimeException("providers is empty");
+//        }
+
+
         String[] names = applicationContext.getBeanDefinitionNames();
         for (String name : names) {
 //            System.out.println("====> " + name);
@@ -40,7 +64,8 @@ public class ConsumerBootstrap implements ApplicationContextAware {
                    String serviceName = service.getCanonicalName();
                    Object consumer = stub.get(serviceName);
                    if (consumer == null) {
-                       consumer = createConsumer(service);
+                       consumer = createConsumerFromRegisty(service, context, rc);
+                   //createConsumer(service, context, List.of(providers));
                    }
                    // 可见性设置成true
                    f.setAccessible(true);
@@ -55,8 +80,15 @@ public class ConsumerBootstrap implements ApplicationContextAware {
         }
     }
 
-    private Object createConsumer(Class<?> service) {
-        return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CFInvocationHandler(service));
+    private Object createConsumerFromRegisty(Class<?> service, RpcContext context, RegistryCenter rc) {
+        String serviceName = service.getCanonicalName();
+        List<String> providers = rc.fetchAll(serviceName);
+        return createConsumer(service, context, providers);
+
+    }
+
+    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
+        return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CFInvocationHandler(service, rpcContext, providers));
     }
 
     private List<Field> findAnnotatedFields(Class<?> aClass) {

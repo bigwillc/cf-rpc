@@ -1,7 +1,9 @@
 package com.bigwillc.cfrpcdemoconsumer;
 
 import com.bigwillc.cfrpccore.annotation.CFConsumer;
+import com.bigwillc.cfrpccore.api.RpcResponse;
 import com.bigwillc.cfrpccore.consumer.ConsumerConfig;
+import com.bigwillc.cfrpccore.provider.ProviderBootstrap;
 import com.bigwillc.cfrpcdemoapi.Order;
 import com.bigwillc.cfrpcdemoapi.OrderService;
 import com.bigwillc.cfrpcdemoapi.User;
@@ -14,6 +16,7 @@ import org.springframework.context.ApplicationContext;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -21,6 +24,7 @@ import java.util.Arrays;
 @SpringBootApplication
 @Import({ConsumerConfig.class})
 //@ComponentScan(basePackages = "")
+@RestController
 public class CfRpcDemoConsumerApplication {
 
 	@Autowired
@@ -31,6 +35,15 @@ public class CfRpcDemoConsumerApplication {
 
 	@CFConsumer
 	OrderService orderService;
+
+
+	@GetMapping("/")
+	@ResponseBody
+	public User findById(int id) {
+		System.out.println("测试负载均衡...");
+		return userService.findById(id);
+	}
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(CfRpcDemoConsumerApplication.class, args);

@@ -3,14 +3,21 @@ package com.bigwillc.cfrpcdemoprovider;
 import com.bigwillc.cfrpccore.annotation.CFProvider;
 import com.bigwillc.cfrpcdemoapi.User;
 import com.bigwillc.cfrpcdemoapi.UserService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
 @Component
 @CFProvider
 public class UserServiceImpl implements UserService {
+
+    @Autowired
+    Environment environment;
+
+
     @Override
     public User findById(int id) {
-        return new User(id, "bigwillc-"+System.currentTimeMillis());
+        return new User(id, "bigwillc-" + environment.getProperty("server.port") + "_" +System.currentTimeMillis());
     }
 
     @Override

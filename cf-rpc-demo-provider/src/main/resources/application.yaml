@@ -1,0 +1,5 @@
+server:
+  port: 8081
+
+cfrpc:
+  service: http://localhost:8081, http://localhost:8082

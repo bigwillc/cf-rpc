@@ -3,8 +3,7 @@ package com.bigwillc.cfrpccore.consumer;
 import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
-import com.bigwillc.cfrpccore.api.RpcRequest;
-import com.bigwillc.cfrpccore.api.RpcResponse;
+import com.bigwillc.cfrpccore.api.*;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import com.bigwillc.cfrpccore.util.TypeUtils;
 import okhttp3.*;
@@ -12,6 +11,7 @@ import okhttp3.*;
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationHandler;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 /**
@@ -23,8 +23,15 @@ public class CFInvocationHandler implements InvocationHandler {
 
     Class<?> service;
 
-    public CFInvocationHandler(Class<?> service) {
+    RpcContext context;
+
+    List<String> providers;
+
+
+    public CFInvocationHandler(Class<?> service, RpcContext context, List<String> providers) {
         this.service = service;
+        this.context = context;
+        this.providers = providers;
     }
 
     @Override
@@ -40,8 +47,12 @@ public class CFInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
+        List<String> urls = context.getRouter().route(this.providers);
+        String url = (String) context.getLoadBalancer().choose(urls);
+        System.out.println("loadBalancer choose url: " + url);
+
         // 实现http请求
-        RpcResponse rpcResponse = post(rpcRequest);
+        RpcResponse rpcResponse = post(rpcRequest, url);
 
         if (rpcResponse.isStatus()) {
 
@@ -79,10 +90,10 @@ public class CFInvocationHandler implements InvocationHandler {
             .build();
     // url connection 也可以
 
-    private RpcResponse post(RpcRequest rpcRequest) {
+    private RpcResponse post(RpcRequest rpcRequest, String url) {
         String reqJson = JSON.toJSONString(rpcRequest);
         Request request = new Request.Builder()
-                .url("http://localhost:8080/")
+                .url(url)
                 .post(RequestBody.create(JSONTYPE, reqJson))
                 .build();
         try {
