@@ -20,6 +20,8 @@ import org.springframework.web.bind.annotation.*;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.List;
 
 @SpringBootApplication
 @Import({ConsumerConfig.class})
@@ -52,26 +54,40 @@ public class CfRpcDemoConsumerApplication {
 	@Bean
 	public ApplicationRunner consumer_runner() {
 		return x -> {
+//			List userArray = new ArrayList();
+//			userArray.add(new User(1, "array1"));
+//			userArray.add(new User(2, "array2"));
+//			System.out.println(userService.getUserList(userArray));
+//
+//			HashMap<String, User> userMap = new HashMap<>();
+//			userMap.put("1", new User(1, "map1"));
+//			userMap.put("2", new User(2, "map2"));
+//			System.out.println(userService.getUserMap(userMap));
+//			System.out.println(userService.getUserMap(new java.util.HashMap<>()
+//			{{
+//				put("1", "map1");
+//				put("2", "map2");
+//			}}));
 
-//			System.out.println(userService.getId(10));
+			System.out.println(userService.getId(10));
 			System.out.println(userService.getId(new User(10, "bigwillc")));
 			System.out.println(userService.getId(1.1f));
-
-			System.out.println(Arrays.toString(userService.getIds()));
-			System.out.println(Arrays.toString(userService.getLongIds()));
-			System.out.println(Arrays.toString(userService.getIds(new int[]{1, 2})));
-
-			User user = userService.findById(1);
-			System.out.println("===> user :" + user);
-
-			Order order = orderService.findById(100);
-			System.out.println("===> order :" + order);
-
-			System.out.println(userService.toString());
-			System.out.println(userService.getId(20));
-			System.out.println(userService.findById(20));
-			System.out.println(userService.findById(20, "bigwillc"));
-			System.out.println(userService.getName());
+//
+//			System.out.println(Arrays.toString(userService.getIds()));
+//			System.out.println(Arrays.toString(userService.getLongIds()));
+//			System.out.println(Arrays.toString(userService.getIds(new int[]{1, 2})));
+//
+//			User user = userService.findById(1);
+//			System.out.println("===> user :" + user);
+//
+//			Order order = orderService.findById(100);
+//			System.out.println("===> order :" + order);
+//
+//			System.out.println(userService.toString());
+//			System.out.println(userService.getId(20));
+//			System.out.println(userService.findById(20));
+//			System.out.println(userService.findById(20, "bigwillc"));
+//			System.out.println(userService.getName());
 
 //			Order order404 = orderService.findById(404);
 //			System.out.println("===> order 404 :" + order404);

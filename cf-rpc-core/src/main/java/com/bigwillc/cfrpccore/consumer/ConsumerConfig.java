@@ -6,6 +6,7 @@ import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.cluster.RandomLoadBalancer;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
 import com.bigwillc.cfrpccore.provider.ProviderBootstrap;
+import com.bigwillc.cfrpccore.registry.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -56,7 +57,7 @@ public class ConsumerConfig {
 
     @Bean(initMethod = "start", destroyMethod = "stop")
     public RegistryCenter consumer_rc() {
-        return new RegistryCenter.StaticRegisterCenter(List.of(services.split(",")));
+        return new ZkRegistryCenter();
     }
 
 }

@@ -6,6 +6,7 @@ import java.lang.reflect.Array;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 /**
  * @author bigwillc on 2024/3/13
@@ -23,7 +24,6 @@ public class TypeUtils {
         }
 
         if (type.isArray()) {
-            Object[] arr;
             if(origin instanceof List list) {
                 origin = list.toArray();
             }
@@ -32,13 +32,23 @@ public class TypeUtils {
             Object resultArray = Array.newInstance(componentType, length);
             System.out.println("===> componentType = " + componentType.getCanonicalName());
             for (int i = 0; i < length; i++) {
-                Array.set(resultArray, i, Array.get(origin, i));
+                // todo 如果不是基本类型，也不是jdk 类型，递归处理
+                if(componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
+                    Array.set(resultArray, i, Array.get(origin, i));
+                } else {
+                    Object castObject = cast(Array.get(origin, i), componentType);
+                    Array.set(resultArray, i, castObject);
+                }
             }
             return resultArray;
         }
-
+//
         if(origin instanceof HashMap map) {
             JSONObject jsonObject = new JSONObject(map);
+            return jsonObject.toJavaObject(type);
+        }
+
+        if(origin instanceof JSONObject jsonObject) {
             return jsonObject.toJavaObject(type);
         }
 

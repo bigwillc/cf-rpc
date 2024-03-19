@@ -1,5 +1,7 @@
 package com.bigwillc.cfrpccore.api;
 
+import com.bigwillc.cfrpccore.registry.ChangeedListener;
+
 import java.util.List;
 
 /**
@@ -17,8 +19,10 @@ public interface RegistryCenter {
 
     // consumer侧
     List<String> fetchAll(String serviceName);
-//    void subscribe();
+
+    void subscribe(String service, ChangeedListener listener);
 //    void unsubscribe();
+//    void headbeat();
 
     class StaticRegisterCenter implements RegistryCenter {
 
@@ -52,6 +56,11 @@ public interface RegistryCenter {
         public List<String> fetchAll(String serviceName) {
             System.out.println("StaticRegisterCenter fetchAll");
             return providers;
+        }
+
+        @Override
+        public void subscribe(String service, ChangeedListener listener) {
+            System.out.println("StaticRegisterCenter subscribe");
         }
     }
 

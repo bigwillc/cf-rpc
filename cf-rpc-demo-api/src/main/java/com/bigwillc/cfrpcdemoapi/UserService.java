@@ -1,5 +1,8 @@
 package com.bigwillc.cfrpcdemoapi;
 
+import java.util.List;
+import java.util.Map;
+
 public interface UserService {
     User findById(int id);
 
@@ -21,5 +24,8 @@ public interface UserService {
 
     int[] getIds(int[] ids);
 
+    List<User> getUserList(List<User> list);
+
+    Map<String, User> getUserMap(Map<String, User> map);
 
 }

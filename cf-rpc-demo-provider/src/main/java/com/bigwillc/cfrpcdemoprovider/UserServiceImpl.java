@@ -7,6 +7,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.List;
+import java.util.Map;
+
 @Component
 @CFProvider
 public class UserServiceImpl implements UserService {
@@ -60,5 +63,22 @@ public class UserServiceImpl implements UserService {
         return new int[]{3, 2, 1};
     }
 
+    @Override
+    public List<User> getUserList(List<User> list) {
+        // 遍历list，对每个name 拼接“—”加时间戳
+        list.forEach(user -> {
+            user.setName(user.getName() + "-" + System.currentTimeMillis());
+        });
+        return list;
+    }
+
+    @Override
+    public Map<String, User> getUserMap(Map<String, User> map) {
+        // 遍历map，对每个value 值里面的User拼接“—”加时间戳
+        map.forEach((k, v) -> {
+            v.setName(v.getName() + "-" + System.currentTimeMillis());
+        });
+        return map;
+    }
 
 }

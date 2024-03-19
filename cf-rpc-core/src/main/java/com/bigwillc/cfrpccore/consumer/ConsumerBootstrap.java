@@ -5,6 +5,8 @@ import com.bigwillc.cfrpccore.api.LoadBalancer;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.api.RpcContext;
+import com.bigwillc.cfrpccore.registry.ChangeedListener;
+import com.bigwillc.cfrpccore.registry.Event;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.context.ApplicationContext;
@@ -18,6 +20,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 /**
  * @author bigwillc on 2024/3/10
@@ -82,9 +85,21 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
     private Object createConsumerFromRegisty(Class<?> service, RpcContext context, RegistryCenter rc) {
         String serviceName = service.getCanonicalName();
-        List<String> providers = rc.fetchAll(serviceName);
-        return createConsumer(service, context, providers);
+        List<String> providers = rc.fetchAll(serviceName).stream()
+                .map(x -> "http://" + x.replace('_', ':')).collect(Collectors.toList());
+        System.out.println(" =====> map to providers: " + providers);
+        providers.forEach(System.out::println);
 
+        rc.subscribe(serviceName, event -> {
+            providers.clear();
+            providers.addAll(mapUrl(event.getData()));
+        });
+
+        return createConsumer(service, context, providers);
+    }
+
+    private List<String> mapUrl(List<String> urls) {
+        return urls.stream().map(x -> "http://" + x.replace('_', ':')).collect(Collectors.toList());
     }
 
     private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
