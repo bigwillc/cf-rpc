@@ -3,3 +3,10 @@ server:
 
 cfrpc:
   services: http://localhost:8081, http://localhost:8082
+  zkServer: localhost:2181
+  zkRoot: cfrpc
+
+app:
+  id: app1
+  namespace: public
+  env: dev

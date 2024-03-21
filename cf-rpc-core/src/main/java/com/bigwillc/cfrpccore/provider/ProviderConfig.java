@@ -1,15 +1,12 @@
 package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.api.RegistryCenter;
-import com.bigwillc.cfrpccore.consumer.ConsumerBootstrap;
-import com.bigwillc.cfrpccore.registry.ZkRegistryCenter;
+import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-
-import java.util.List;
 
 @Configuration
 public class ProviderConfig {
@@ -17,6 +14,11 @@ public class ProviderConfig {
     @Bean
     ProviderBootstrap providerBootstrap() {
         return new ProviderBootstrap();
+    }
+
+    @Bean
+    ProviderInvoker providerInvoker(@Autowired ProviderBootstrap providerBootstrap) {
+        return new ProviderInvoker(providerBootstrap);
     }
 
     // 延迟服务暴露
@@ -31,8 +33,11 @@ public class ProviderConfig {
     }
 
     // 启动的时候会调用start 方法启动，销毁的时候会调用stop
-    @Bean(initMethod = "start", destroyMethod = "stop")
+//    @Bean(initMethod = "start", destroyMethod = "stop")
+    @Bean
     public RegistryCenter provider_rc() {
         return new ZkRegistryCenter();
     }
+
+
 }

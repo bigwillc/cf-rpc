@@ -5,10 +5,14 @@ import com.bigwillc.cfrpccore.api.LoadBalancer;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.api.RpcContext;
+import com.bigwillc.cfrpccore.meta.InstanceMeta;
+import com.bigwillc.cfrpccore.meta.ServiceMeta;
 import com.bigwillc.cfrpccore.registry.ChangeedListener;
 import com.bigwillc.cfrpccore.registry.Event;
+import com.bigwillc.cfrpccore.util.MethodUtils;
 import lombok.Data;
 import org.apache.logging.log4j.util.Strings;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
 import org.springframework.context.EnvironmentAware;
@@ -31,12 +35,21 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     ApplicationContext applicationContext;
     Environment environment;
 
+    @Value("${app.id}")
+    private String app;
+
+    @Value("${app.namespace}")
+    private String namespace;
+
+    @Value("${app.env}")
+    private String env;
+
     private Map<String, Object> stub = new HashMap<>();
 
     public void start(){
 
-        Router router = applicationContext.getBean(Router.class);
-        LoadBalancer loadBalancer = applicationContext.getBean(LoadBalancer.class);
+        Router<InstanceMeta> router = applicationContext.getBean(Router.class);
+        LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
         RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
 
         RpcContext context = new RpcContext();
@@ -58,7 +71,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 //            if (!name.contains("cfRpcDemoConsumerApplication")) {
 //                return;
 //            }
-            List<Field> fields = findAnnotatedFields(bean.getClass());
+            List<Field> fields = MethodUtils.findAnnotatedFields(bean.getClass(), CFConsumer.class);
 
            fields.stream().forEach(f->{
                System.out.println("====> " + f.getName());
@@ -68,7 +81,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
                    Object consumer = stub.get(serviceName);
                    if (consumer == null) {
                        consumer = createConsumerFromRegisty(service, context, rc);
-                   //createConsumer(service, context, List.of(providers));
+                       stub.put(serviceName, consumer);
                    }
                    // 可见性设置成true
                    f.setAccessible(true);
@@ -84,42 +97,25 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     }
 
     private Object createConsumerFromRegisty(Class<?> service, RpcContext context, RegistryCenter rc) {
-        String serviceName = service.getCanonicalName();
-        List<String> providers = rc.fetchAll(serviceName).stream()
-                .map(x -> "http://" + x.replace('_', ':')).collect(Collectors.toList());
+        ServiceMeta serviceName = ServiceMeta.builder()
+                .app(app).namespace(namespace).env(env).name(service.getCanonicalName()).build();
+        List<InstanceMeta> providers = rc.fetchAll(serviceName);
         System.out.println(" =====> map to providers: " + providers);
         providers.forEach(System.out::println);
 
         rc.subscribe(serviceName, event -> {
             providers.clear();
-            providers.addAll(mapUrl(event.getData()));
+            providers.addAll(event.getData());
         });
 
         return createConsumer(service, context, providers);
     }
 
-    private List<String> mapUrl(List<String> urls) {
-        return urls.stream().map(x -> "http://" + x.replace('_', ':')).collect(Collectors.toList());
-    }
-
-    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<String> providers) {
+    private Object createConsumer(Class<?> service, RpcContext rpcContext, List<InstanceMeta> providers) {
         return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CFInvocationHandler(service, rpcContext, providers));
     }
 
-    private List<Field> findAnnotatedFields(Class<?> aClass) {
-        List<Field> result = new ArrayList<>();
-//        Field[] fields = aClass.getDeclaredFields(); 这个类是被代理过的, 增强的子类
-        while (aClass != null) {
-            Field[] fields = aClass.getDeclaredFields();
-            for (Field field : fields) {
-                if (field.isAnnotationPresent(CFConsumer.class)) {
-                    result.add(field);
-                }
-            }
-            aClass = aClass.getSuperclass();
-        }
-        return result;
-    }
+
 
 
 }

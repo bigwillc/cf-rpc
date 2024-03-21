@@ -1,5 +1,7 @@
 package com.bigwillc.cfrpccore.api;
 
+import com.bigwillc.cfrpccore.meta.InstanceMeta;
+import com.bigwillc.cfrpccore.meta.ServiceMeta;
 import com.bigwillc.cfrpccore.registry.ChangeedListener;
 
 import java.util.List;
@@ -14,21 +16,21 @@ public interface RegistryCenter {
     void stop();
 
     // provider侧
-    void register(String serviceName, String instance);
-    void unregister(String serviceName, String instance);
+    void register(ServiceMeta serviceName, InstanceMeta instance);
+    void unregister(ServiceMeta serviceName, InstanceMeta instance);
 
     // consumer侧
-    List<String> fetchAll(String serviceName);
+    List<InstanceMeta> fetchAll(ServiceMeta serviceName);
 
-    void subscribe(String service, ChangeedListener listener);
+    void subscribe(ServiceMeta service, ChangeedListener listener);
 //    void unsubscribe();
 //    void headbeat();
 
     class StaticRegisterCenter implements RegistryCenter {
 
-        List<String> providers;
+        List<InstanceMeta> providers;
 
-        public StaticRegisterCenter(List<String> providers) {
+        public StaticRegisterCenter(List<InstanceMeta> providers) {
             this.providers = providers;
         }
 
@@ -43,23 +45,23 @@ public interface RegistryCenter {
         }
 
         @Override
-        public void register(String serviceName, String instance) {
+        public void register(ServiceMeta serviceName, InstanceMeta instance) {
             System.out.println("StaticRegisterCenter register");
         }
 
         @Override
-        public void unregister(String serviceName, String instance) {
+        public void unregister(ServiceMeta serviceName, InstanceMeta instance) {
             System.out.println("StaticRegisterCenter unregister");
         }
 
         @Override
-        public List<String> fetchAll(String serviceName) {
+        public List<InstanceMeta> fetchAll(ServiceMeta serviceName) {
             System.out.println("StaticRegisterCenter fetchAll");
             return providers;
         }
 
         @Override
-        public void subscribe(String service, ChangeedListener listener) {
+        public void subscribe(ServiceMeta service, ChangeedListener listener) {
             System.out.println("StaticRegisterCenter subscribe");
         }
     }

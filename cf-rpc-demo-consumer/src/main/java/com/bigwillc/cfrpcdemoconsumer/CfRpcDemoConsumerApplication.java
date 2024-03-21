@@ -18,10 +18,7 @@ import org.springframework.context.annotation.ComponentScan;
 import org.springframework.context.annotation.Import;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
+import java.util.*;
 
 @SpringBootApplication
 @Import({ConsumerConfig.class})
@@ -59,10 +56,14 @@ public class CfRpcDemoConsumerApplication {
 //			userArray.add(new User(2, "array2"));
 //			System.out.println(userService.getUserList(userArray));
 //
-//			HashMap<String, User> userMap = new HashMap<>();
-//			userMap.put("1", new User(1, "map1"));
-//			userMap.put("2", new User(2, "map2"));
-//			System.out.println(userService.getUserMap(userMap));
+
+//			System.out.println("Case 12. >>===[测试参数和返回值都是Map类型]===");
+//			Map<String, User> map = new HashMap<>();
+//			map.put("A200", new User(200, "KK200"));
+//			map.put("A201", new User(201, "KK201"));
+//			userService.getUserMap(map).forEach(
+//					(k,v) -> System.out.println(k + " -> " + v)
+//			);
 //			System.out.println(userService.getUserMap(new java.util.HashMap<>()
 //			{{
 //				put("1", "map1");

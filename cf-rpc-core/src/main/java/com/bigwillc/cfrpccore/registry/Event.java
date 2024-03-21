@@ -1,5 +1,6 @@
 package com.bigwillc.cfrpccore.registry;
 
+import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -11,5 +12,5 @@ import java.util.List;
 @Data
 @AllArgsConstructor
 public class Event {
-    List<String> data;
+    List<InstanceMeta> data;
 }

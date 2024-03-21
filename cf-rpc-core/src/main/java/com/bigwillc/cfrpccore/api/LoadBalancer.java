@@ -14,11 +14,6 @@ public interface LoadBalancer<T> {
     T choose(List<T> providers);
 
 
-    LoadBalancer<Object> Default = new LoadBalancer<Object>() {
-        @Override
-        public Object choose(List<Object> providers) {
-            return providers == null || providers.isEmpty() ? null : providers.get(0);
-        }
-    };
+    LoadBalancer<?> Default = p -> (p == null || p.isEmpty()) ? null : p.get(0);
 
 }

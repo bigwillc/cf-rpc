@@ -4,6 +4,7 @@ import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
 import com.bigwillc.cfrpccore.provider.ProviderBootstrap;
 import com.bigwillc.cfrpccore.provider.ProviderConfig;
+import com.bigwillc.cfrpccore.provider.ProviderInvoker;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -26,12 +27,11 @@ public class CfRpcDemoProviderApplication {
     // 使用http + json 来实现序列化和通信
 
     @Autowired
-    ProviderBootstrap providerBootstrap;
+    ProviderInvoker providerInvoker;
 
     @RequestMapping("/")
     public RpcResponse invoke(@RequestBody RpcRequest request) {
-
-        return providerBootstrap.invoke(request);
+        return providerInvoker.invoke(request);
     }
 
 

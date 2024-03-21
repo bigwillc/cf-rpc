@@ -1,5 +1,6 @@
 package com.bigwillc.cfrpccore.api;
 
+import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import lombok.Data;
 
 import java.util.List;
@@ -13,7 +14,7 @@ public class RpcContext {
 
     List<Filter> filters;
 
-    Router router;
+    Router<InstanceMeta> router;
 
-    LoadBalancer loadBalancer;
+    LoadBalancer<InstanceMeta> loadBalancer;
 }

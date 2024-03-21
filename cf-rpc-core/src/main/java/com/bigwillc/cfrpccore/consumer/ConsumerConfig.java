@@ -3,18 +3,15 @@ package com.bigwillc.cfrpccore.consumer;
 import com.bigwillc.cfrpccore.api.LoadBalancer;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
-import com.bigwillc.cfrpccore.cluster.RandomLoadBalancer;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
-import com.bigwillc.cfrpccore.provider.ProviderBootstrap;
-import com.bigwillc.cfrpccore.registry.ZkRegistryCenter;
+import com.bigwillc.cfrpccore.meta.InstanceMeta;
+import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
-
-import java.util.List;
 
 /**
  * @author bigwillc on 2024/3/10
@@ -42,15 +39,15 @@ public class ConsumerConfig {
     }
 
     @Bean
-    public LoadBalancer loadBalancer() {
+    public LoadBalancer<InstanceMeta> loadBalancer() {
 //        return LoadBalancer.Default;
 //        return new RandomLoadBalancer();
-        return new RoundRibbonLoadBalancer();
+        return new RoundRibbonLoadBalancer<>();
     }
 
 
     @Bean
-    public Router router() {
+    public Router<InstanceMeta> router() {
         return Router.Default;
     }
 

@@ -3,11 +3,11 @@ package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.annotation.CFProvider;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
-import com.bigwillc.cfrpccore.api.RpcRequest;
-import com.bigwillc.cfrpccore.api.RpcResponse;
+import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ProviderMeta;
+import com.bigwillc.cfrpccore.meta.ServiceMeta;
+import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import com.bigwillc.cfrpccore.util.MethodUtils;
-import com.bigwillc.cfrpccore.util.TypeUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import lombok.Data;
@@ -18,10 +18,8 @@ import org.springframework.context.ApplicationContextAware;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
-import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.*;
 
 /**
@@ -39,19 +37,31 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
-    private String instance;
+    RegistryCenter rc;
+
+    private InstanceMeta instance;
 
     @Value("${server.port}")
     private String port;
+
+    @Value("${app.id}")
+    private String app;
+
+    @Value("${app.namespace}")
+    private String namespace;
+
+    @Value("${app.env}")
+    private String env;
 
     @SneakyThrows
     @PostConstruct // 加载的时候，spring 还未初始化完成
     public void init() {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CFProvider.class);
         providers.forEach((x, y) -> System.out.println(x));
+        rc = applicationContext.getBean(RegistryCenter.class);
 //		skeleton.putAll(providers);
         // x 是bean 的名字，不是接口
-        providers.values().forEach(x -> genInterface(x));
+        providers.values().forEach(this::genInterface);
 
     }
 
@@ -59,36 +69,39 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = ip + ":" + port;
+        instance = InstanceMeta.http(ip, Integer.parseInt(port));
+        rc.start();
         skeleton.keySet().forEach(this::registerService);
     }
 
     @PreDestroy
     public void stop() {
+        System.out.println(" ====> stop all services");
         skeleton.keySet().forEach(this::unregisterService);
+        rc.stop();
     }
 
     private void unregisterService(String service) {
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
-        rc.unregister(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).name(service).build();
+        rc.unregister(serviceMeta, instance);
     }
 
     private void registerService(String service){
-        RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
-        rc.register(service, instance);
+        ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).name(service).build();
+        rc.register(serviceMeta, instance);
     }
 
 
-    private void genInterface(Object x) {
+    private void genInterface(Object impl) {
 
-        Arrays.stream((x.getClass().getInterfaces())).forEach(
-                itfer -> {
-                    Method[] methods = itfer.getMethods();
+        Arrays.stream((impl.getClass().getInterfaces())).forEach(
+                server -> {
+                    Method[] methods = server.getMethods();
                     for (Method method : methods){
                         if(MethodUtils.checkLocalMethod(method)){
                             continue;
                         }
-                        createProvider(itfer, x, method);
+                        createProvider(server, impl, method);
                     }
                 }
         );
@@ -111,76 +124,15 @@ public class ProviderBootstrap implements ApplicationContextAware {
 //        }
     }
 
-    private void createProvider(Class<?> itfer, Object x, Method method) {
+    private void createProvider(Class<?> service, Object impl, Method method) {
 
-        ProviderMeta meta = new ProviderMeta();
-        meta.setMethod(method);
-        meta.setMethodSign(MethodUtils.methodSign(method));
-        meta.setServiceImpl(x);
+        ProviderMeta meta = ProviderMeta.builder().method(method)
+                .methodSign(MethodUtils.methodSign(method))
+                .serviceImpl(impl).build();
         System.out.println(" create a provider: " + meta);
-        skeleton.add(itfer.getCanonicalName(), meta);
+        skeleton.add(service.getCanonicalName(), meta);
     }
 
 
-    public RpcResponse invoke(RpcRequest request) {
-
-        String methodName = request.getMethodSign();
-        if(methodName.equals("toString") || methodName.equals("hashCode") || methodName.equals("equals")){
-            throw new RuntimeException("不支持的方法调用");
-        }
-
-        RpcResponse rpcResponse = new RpcResponse();
-        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
-
-        try {
-
-            ProviderMeta meta = findProviderMeta(providerMetas, request.getMethodSign());
-
-//			Method method = bean.getClass().getDeclaredMethod(request.getMethod());
-            Method method = meta.getMethod();
-            Object[] args = processArgs(request.getArgs(), method.getParameterTypes());
-            Object result = method.invoke(meta.getServiceImpl(), args);
-            rpcResponse.setStatus(true);
-            rpcResponse.setData(result);
-            return rpcResponse;
-        } catch (InvocationTargetException e) {
-            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
-        } catch (IllegalAccessException e) {
-            rpcResponse.setEx(new RuntimeException(e.getMessage()));
-        }
-        return rpcResponse;
-    }
-
-    // RpcRequest 里面的arg参数是object 对象，需要转换成对应的类型
-    private Object[] processArgs(Object[] args, Class<?>[] parameterTypes) {
-
-        if(args == null || args.length == 0){
-            return args;
-        }
-
-        Object[] actuals = new Object[args.length];
-        for (int i = 0; i < args.length; i++) {
-            actuals[i] = TypeUtils.cast(args[i], parameterTypes[i]);
-        }
-
-        return actuals;
-    }
-
-    private ProviderMeta findProviderMeta(List<ProviderMeta> providerMetas, String methodSign) {
-
-        Optional<ProviderMeta> optional = providerMetas.stream().filter(
-                x -> x.getMethodSign().equals(methodSign)
-        ).findFirst();
-        return optional.orElse(null);
-    }
-
-    private Method findMethod(Class<?> aClass, String methodName) {
-        for (Method method : aClass.getMethods()) {
-            if (method.getName().equals(methodName)) {
-                return method;
-            }
-        }
-        return null;
-    }
 
 }
