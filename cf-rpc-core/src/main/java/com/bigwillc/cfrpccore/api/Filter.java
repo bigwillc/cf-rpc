@@ -1,5 +1,7 @@
 package com.bigwillc.cfrpccore.api;
 
+import lombok.SneakyThrows;
+
 /**
  * @author bigwillc on 2024/3/16
  */

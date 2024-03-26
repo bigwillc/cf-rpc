@@ -85,17 +85,17 @@ public class CfRpcDemoConsumerApplication {
 					userService.getId(new User(100,"KK")));
 
 
-			System.out.println("Case 9. >>===[测试返回long[]]===");
-			System.out.println(" ===> userService.getLongIds(): ");
-			for (long id : userService.getLongIds()) {
-				System.out.println(id);
-			}
-
-			System.out.println("Case 10. >>===[测试参数和返回值都是long[]]===");
-			System.out.println(" ===> userService.getLongIds(): ");
-			for (long id : userService.getIds(new int[]{4,5,6})) {
-				System.out.println(id);
-			}
+//			System.out.println("Case 9. >>===[测试返回long[]]===");
+//			System.out.println(" ===> userService.getLongIds(): ");
+//			for (long id : userService.getLongIds()) {
+//				System.out.println(id);
+//			}
+//
+//			System.out.println("Case 10. >>===[测试参数和返回值都是long[]]===");
+//			System.out.println(" ===> userService.getLongIds(): ");
+//			for (long id : userService.getIds(new int[]{4,5,6})) {
+//				System.out.println(id);
+//			}
 //
 //			// 测试参数和返回值都是List类型
 //			System.out.println("Case 11. >>===[测试参数和返回值都是List类型]===");

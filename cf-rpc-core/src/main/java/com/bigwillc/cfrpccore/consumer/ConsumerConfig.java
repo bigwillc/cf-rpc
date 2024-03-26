@@ -6,6 +6,7 @@ import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
 import com.bigwillc.cfrpccore.filter.CacheFilter;
+import com.bigwillc.cfrpccore.filter.MockFilter;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -61,8 +62,12 @@ public class ConsumerConfig {
     }
 
     @Bean
-    public Filter filter() {
+    public Filter filter1() {
         return new CacheFilter();
     }
 
+//    @Bean
+//    public Filter filter2() {
+//        return new MockFilter();
+//    }
 }

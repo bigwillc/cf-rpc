@@ -19,9 +19,23 @@ import static com.bigwillc.cfrpccore.util.TypeUtils.cast;
 @Slf4j
 public class MethodUtils {
 
-//    public static boolean checkLocalMethod(Method method) {
-//        return false;
-//    }
+    public static boolean checkLocalMethod(final String method) {
+        //本地方法不代理
+        if ("toString".equals(method) ||
+                "hashCode".equals(method) ||
+                "notifyAll".equals(method) ||
+                "equals".equals(method) ||
+                "wait".equals(method) ||
+                "getClass".equals(method) ||
+                "notify".equals(method)) {
+            return true;
+        }
+        return false;
+    }
+
+    public static boolean checkLocalMethod(final Method method) {
+        return method.getDeclaringClass().equals(Object.class);
+    }
 
     public static String methodSign(Method method) {
         StringBuilder sb = new StringBuilder(method.getName());
@@ -33,9 +47,6 @@ public class MethodUtils {
         return sb.toString();
     }
 
-    public static boolean checkLocalMethod(String method) {
-        return false;
-    }
 
 //    public static String methodSign(Method method, Class cls) {
 //        return null;
