@@ -14,4 +14,4 @@ app:
 logging:
   level:
     root: INFO
-    com.bigwillc.cf-rpc: debug
+    com.bigwillc.cfrpcdemoprovider: debug

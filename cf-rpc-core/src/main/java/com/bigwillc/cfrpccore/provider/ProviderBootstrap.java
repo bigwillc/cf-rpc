@@ -100,7 +100,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
                 server -> {
                     Method[] methods = server.getMethods();
                     for (Method method : methods){
-                        if(MethodUtils.checkLocalMethod(method)){
+                        if(MethodUtils.checkLocalMethod(method.getName())){
                             continue;
                         }
                         createProvider(server, impl, method);

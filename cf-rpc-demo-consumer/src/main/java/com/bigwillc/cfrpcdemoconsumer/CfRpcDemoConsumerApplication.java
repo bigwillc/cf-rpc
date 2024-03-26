@@ -68,8 +68,8 @@ public class CfRpcDemoConsumerApplication {
 			System.out.println("userService.getName(123) = " + userService.getName(123));
 
 			// 测试local toString方法
-			System.out.println("Case 5. >>===[测试local toString方法]===");
-			System.out.println("userService.toString() = " + userService.toString());
+//			System.out.println("Case 5. >>===[测试local toString方法]===");
+//			System.out.println("userService.toString() = " + userService.toString());
 
 			// 测试long类型
 			System.out.println("Case 6. >>===[常规int类型，返回User对象]===");

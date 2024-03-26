@@ -1,9 +1,11 @@
 package com.bigwillc.cfrpccore.consumer;
 
+import com.bigwillc.cfrpccore.api.Filter;
 import com.bigwillc.cfrpccore.api.LoadBalancer;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
+import com.bigwillc.cfrpccore.filter.CacheFilter;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -53,10 +55,14 @@ public class ConsumerConfig {
         return Router.Default;
     }
 
-
     @Bean(initMethod = "start", destroyMethod = "stop")
     public RegistryCenter consumer_rc() {
         return new ZkRegistryCenter();
+    }
+
+    @Bean
+    public Filter filter() {
+        return new CacheFilter();
     }
 
 }

@@ -33,7 +33,7 @@ public class MethodUtils {
         return sb.toString();
     }
 
-    public static boolean checkLocalMethod(Method method) {
+    public static boolean checkLocalMethod(String method) {
         return false;
     }
 

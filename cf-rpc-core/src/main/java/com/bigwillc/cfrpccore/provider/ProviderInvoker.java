@@ -25,11 +25,6 @@ public class ProviderInvoker {
 
     public RpcResponse<Object> invoke(RpcRequest request) {
 
-//        String methodName = request.getMethodSign();
-//        if(methodName.equals("toString") || methodName.equals("hashCode") || methodName.equals("equals")){
-//            throw new RuntimeException("不支持的方法调用");
-//        }
-
         RpcResponse<Object> rpcResponse = new RpcResponse();
         List<ProviderMeta> providerMetas = skeleton.get(request.getService());
 

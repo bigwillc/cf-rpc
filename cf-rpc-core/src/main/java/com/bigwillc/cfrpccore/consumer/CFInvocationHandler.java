@@ -41,8 +41,7 @@ public class CFInvocationHandler implements InvocationHandler {
     @Override
     public Object invoke(Object proxy, Method method, Object[] args) throws Throwable {
 
-        String name = method.getName();
-        if (name.equals("toString") || name.equals("hashCode") || name.equals("equals")) {
+        if (MethodUtils.checkLocalMethod(method.getName())) {
             return null;
         }
 
@@ -51,6 +50,14 @@ public class CFInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
+        for (Filter filter : this.context.getFilters()) {
+            Object preResult = filter.preFilter(rpcRequest);
+            if (preResult != null) {
+//                log.info(filter.getClass().getName() + " ===> prefilter " + preResponse);
+                return preResult;
+            }
+        }
+
         List<InstanceMeta> instances = context.getRouter().route(providers);
         InstanceMeta instance = context.getLoadBalancer().choose(instances);
         log.debug(" ===> loadBalancer choose instance: " + instance);
@@ -58,7 +65,22 @@ public class CFInvocationHandler implements InvocationHandler {
         // 实现http请求
         RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
 
+        Object result = castReturnResult(method, rpcResponse);
 
+        // 这里拿到的可能不是最终值，需要再设计一下
+        for (Filter filter : this.context.getFilters()) {
+            Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
+            if (filterResult != null) {
+
+            }
+        }
+
+
+        return castReturnResult(method, rpcResponse);
+    }
+
+    @Nullable
+    private static Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
             return MethodUtils.castMethodResult(method, data);

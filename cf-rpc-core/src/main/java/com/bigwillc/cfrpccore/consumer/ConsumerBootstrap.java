@@ -1,10 +1,7 @@
 package com.bigwillc.cfrpccore.consumer;
 
 import com.bigwillc.cfrpccore.annotation.CFConsumer;
-import com.bigwillc.cfrpccore.api.LoadBalancer;
-import com.bigwillc.cfrpccore.api.RegistryCenter;
-import com.bigwillc.cfrpccore.api.Router;
-import com.bigwillc.cfrpccore.api.RpcContext;
+import com.bigwillc.cfrpccore.api.*;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
 import com.bigwillc.cfrpccore.registry.ChangeedListener;
@@ -53,10 +50,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         Router<InstanceMeta> router = applicationContext.getBean(Router.class);
         LoadBalancer<InstanceMeta> loadBalancer = applicationContext.getBean(LoadBalancer.class);
         RegistryCenter rc = applicationContext.getBean(RegistryCenter.class);
+        List<Filter> filters = applicationContext.getBeansOfType(Filter.class).values().stream().collect(Collectors.toList());
 
         RpcContext context = new RpcContext();
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
+        context.setFilters(filters);
 
 //        String urls = environment.getProperty("cfrpc.providers", "");
 //        if (Strings.isEmpty(urls)) {
