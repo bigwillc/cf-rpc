@@ -6,6 +6,8 @@ import java.util.Map;
 public interface UserService {
     User findById(int id);
 
+    User findById(long id);
+
     User findById(int id, String name);
 
 //    User findById(long id);
@@ -18,14 +20,19 @@ public interface UserService {
 
     String getName();
 
+    String getName(int id);
+
     int[] getIds();
 
     long[] getLongIds();
 
     int[] getIds(int[] ids);
 
-    List<User> getUserList(List<User> list);
+    List<User> getList(List<User> list);
 
-    Map<String, User> getUserMap(Map<String, User> map);
+    Map<String, User> getMap(Map<String, User> map);
+
+    boolean getFlag(boolean flag);
+    User[] findUsers(User[] users);
 
 }

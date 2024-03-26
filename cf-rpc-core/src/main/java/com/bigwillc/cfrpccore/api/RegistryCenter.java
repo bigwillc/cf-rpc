@@ -3,6 +3,7 @@ package com.bigwillc.cfrpccore.api;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
 import com.bigwillc.cfrpccore.registry.ChangeedListener;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.List;
 
@@ -26,6 +27,7 @@ public interface RegistryCenter {
 //    void unsubscribe();
 //    void headbeat();
 
+    @Slf4j
     class StaticRegisterCenter implements RegistryCenter {
 
         List<InstanceMeta> providers;
@@ -36,33 +38,33 @@ public interface RegistryCenter {
 
         @Override
         public void start() {
-            System.out.println("StaticRegisterCenter start");
+            log.info("StaticRegisterCenter start");
         }
 
         @Override
         public void stop() {
-            System.out.println("StaticRegisterCenter stop");
+            log.info("StaticRegisterCenter stop");
         }
 
         @Override
         public void register(ServiceMeta serviceName, InstanceMeta instance) {
-            System.out.println("StaticRegisterCenter register");
+            log.info("StaticRegisterCenter register");
         }
 
         @Override
         public void unregister(ServiceMeta serviceName, InstanceMeta instance) {
-            System.out.println("StaticRegisterCenter unregister");
+            log.info("StaticRegisterCenter unregister");
         }
 
         @Override
         public List<InstanceMeta> fetchAll(ServiceMeta serviceName) {
-            System.out.println("StaticRegisterCenter fetchAll");
+            log.info("StaticRegisterCenter fetchAll");
             return providers;
         }
 
         @Override
         public void subscribe(ServiceMeta service, ChangeedListener listener) {
-            System.out.println("StaticRegisterCenter subscribe");
+            log.info("StaticRegisterCenter subscribe");
         }
     }
 

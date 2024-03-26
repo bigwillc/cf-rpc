@@ -2,6 +2,7 @@ package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
@@ -9,6 +10,7 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
 
 @Configuration
+@Slf4j
 public class ProviderConfig {
 
     @Bean
@@ -26,9 +28,9 @@ public class ProviderConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner providerBootstrap_runner(@Autowired ProviderBootstrap providerBootstrap) {
         return x -> {
-            System.out.println("start consumer");
+            log.info("start consumer");
             providerBootstrap.start();
-            System.out.println("consumer started");
+            log.info("consumer started");
         };
     }
 

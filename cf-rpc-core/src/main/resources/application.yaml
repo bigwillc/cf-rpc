@@ -1,2 +1,7 @@
 registry:
   center: zookeeper
+
+logging:
+  level:
+    root: INFO
+    com.bigwillc.cf-rpc: debug

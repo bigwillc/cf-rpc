@@ -6,6 +6,7 @@ import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
@@ -17,6 +18,7 @@ import org.springframework.core.annotation.Order;
  * @author bigwillc on 2024/3/10
  */
 @Configuration
+@Slf4j
 public class ConsumerConfig {
 
     @Value("${cfrpc.services}")
@@ -32,9 +34,9 @@ public class ConsumerConfig {
     @Order(Integer.MIN_VALUE)
     public ApplicationRunner consumerBootstrap_runner(@Autowired ConsumerBootstrap consumerBootstrap) {
         return x -> {
-            System.out.println("start consumer");
+            log.info("start consumer");
             consumerBootstrap.start();
-            System.out.println("consumer started");
+            log.info("consumer started");
         };
     }
 

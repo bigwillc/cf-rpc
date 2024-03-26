@@ -1,7 +1,9 @@
 package com.bigwillc.cfrpccore.util;
 
+import com.alibaba.fastjson.JSON;
 import com.alibaba.fastjson.JSONArray;
 import com.alibaba.fastjson.JSONObject;
+import lombok.extern.slf4j.Slf4j;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
@@ -12,7 +14,51 @@ import java.util.*;
 /**
  * @author bigwillc on 2024/3/13
  */
+@Slf4j
 public class TypeUtils {
+
+    // 假设我们能够以某种方式传递元素类型
+    public static <T> Object cast(Object source, Class<?> targetType, Class<?>... elementTypes) {
+        // 如果源对象为null，直接返回null
+        if (source == null) {
+            return null;
+        }
+
+        // 如果目标类型是List且我们知道元素类型
+        if (List.class.isAssignableFrom(targetType) && elementTypes.length > 0) {
+            Class<?> elementType = elementTypes[0]; // 取第一个元素类型为List的元素类型
+            return convertToList(source, elementType);
+        }
+
+        // 对于其他类型，可以在这里扩展逻辑，例如基本类型转换等
+        // ...
+
+        // 如果无法识别类型，返回原对象
+        return source;
+    }
+
+    // 转换Object到List<T>
+    private static <T> List<T> convertToList(Object source, Class<T> elementType) {
+        // 如果源对象已经是JSON字符串，则直接转换
+        if (source instanceof String) {
+            return JSONArray.parseArray((String) source, elementType);
+        }
+
+        // 如果源对象是List类型，尝试转换每个元素
+        if (source instanceof List) {
+            List<?> sourceList = (List<?>) source;
+            List<T> targetList = new ArrayList<>(sourceList.size());
+            for (Object item : sourceList) {
+                T targetItem = JSON.parseObject(JSON.toJSONString(item), elementType);
+                targetList.add(targetItem);
+            }
+            return targetList;
+        }
+
+        // 其他情况，直接使用JSON转换
+        String jsonString = JSON.toJSONString(source);
+        return JSONArray.parseArray(jsonString, elementType);
+    }
 
     public static Object cast(Object origin, Class<?> type) {
         if(origin== null) {
@@ -31,7 +77,7 @@ public class TypeUtils {
             int length = Array.getLength(origin);
             Class<?> componentType = type.getComponentType();
             Object resultArray = Array.newInstance(componentType, length);
-            System.out.println("===> componentType = " + componentType.getCanonicalName());
+            log.debug("===> componentType = " + componentType.getCanonicalName());
             for (int i = 0; i < length; i++) {
                 // 如果不是基本类型，也不是jdk 类型，递归处理
                 if(componentType.isPrimitive() || componentType.getPackageName().startsWith("java")) {
@@ -76,17 +122,17 @@ public class TypeUtils {
 
     public static Object castMethodResult(Method method, Object data) {
         Class<?> type = method.getReturnType();
-        System.out.println("method.getReturnType() = " + type);
+        log.debug("method.getReturnType() = " + type);
         if (data instanceof JSONObject jsonResult) {
             if (Map.class.isAssignableFrom(type)) {
                 Map resultMap = new HashMap();
                 Type genericReturnType = method.getGenericReturnType();
-                System.out.println(genericReturnType);
+                log.debug(genericReturnType.toString());
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Class<?> keyType = (Class<?>)parameterizedType.getActualTypeArguments()[0];
                     Class<?> valueType = (Class<?>)parameterizedType.getActualTypeArguments()[1];
-                    System.out.println("keyType  : " + keyType);
-                    System.out.println("valueType: " + valueType);
+                    log.debug("keyType  : " + keyType);
+                    log.debug("valueType: " + valueType);
                     jsonResult.entrySet().stream().forEach(
                             e -> {
                                 Object key = cast(e.getKey(), keyType);
@@ -115,10 +161,10 @@ public class TypeUtils {
             } else if (List.class.isAssignableFrom(type)) {
                 List<Object> resultList = new ArrayList<>(array.length);
                 Type genericReturnType = method.getGenericReturnType();
-                System.out.println(genericReturnType);
+                log.debug(genericReturnType.toString());
                 if (genericReturnType instanceof ParameterizedType parameterizedType) {
                     Type actualType = parameterizedType.getActualTypeArguments()[0];
-                    System.out.println(actualType);
+                    log.debug(actualType.toString());
                     for (Object o : array) {
                         resultList.add(cast(o, (Class<?>) actualType));
                     }

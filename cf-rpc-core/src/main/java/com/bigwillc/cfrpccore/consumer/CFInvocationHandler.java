@@ -8,6 +8,7 @@ import com.bigwillc.cfrpccore.consumer.http.OkHttpInvoker;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import com.bigwillc.cfrpccore.util.TypeUtils;
+import lombok.extern.slf4j.Slf4j;
 import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
 
@@ -21,6 +22,7 @@ import static com.bigwillc.cfrpccore.util.TypeUtils.cast;
 /**
  * @author bigwillc on 2024/3/10
  */
+@Slf4j
 public class CFInvocationHandler implements InvocationHandler {
 
     Class<?> service;
@@ -51,7 +53,7 @@ public class CFInvocationHandler implements InvocationHandler {
 
         List<InstanceMeta> instances = context.getRouter().route(providers);
         InstanceMeta instance = context.getLoadBalancer().choose(instances);
-        System.out.println(" ===> loadBalancer choose instance: " + instance);
+        log.debug(" ===> loadBalancer choose instance: " + instance);
 
         // 实现http请求
         RpcResponse<?> rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());

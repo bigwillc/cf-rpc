@@ -11,6 +11,7 @@ import com.bigwillc.cfrpccore.registry.ChangeedListener;
 import com.bigwillc.cfrpccore.registry.Event;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import lombok.Data;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
@@ -30,6 +31,7 @@ import java.util.stream.Collectors;
  * @author bigwillc on 2024/3/10
  */
 @Data
+@Slf4j
 public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAware {
 
     ApplicationContext applicationContext;
@@ -58,14 +60,14 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
 
 //        String urls = environment.getProperty("cfrpc.providers", "");
 //        if (Strings.isEmpty(urls)) {
-//            System.out.println("cfrpc.providers is empty");
+//            log.info("cfrpc.providers is empty");
 //            throw new RuntimeException("providers is empty");
 //        }
 
 
         String[] names = applicationContext.getBeanDefinitionNames();
         for (String name : names) {
-//            System.out.println("====> " + name);
+//            log.info("====> " + name);
             Object bean = applicationContext.getBean(name);
 
 //            if (!name.contains("cfRpcDemoConsumerApplication")) {
@@ -74,7 +76,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
             List<Field> fields = MethodUtils.findAnnotatedFields(bean.getClass(), CFConsumer.class);
 
            fields.stream().forEach(f->{
-               System.out.println("====> " + f.getName());
+               log.info("====> " + f.getName());
                try {
                    Class<?> service = f.getType();
                    String serviceName = service.getCanonicalName();
@@ -100,7 +102,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         ServiceMeta serviceName = ServiceMeta.builder()
                 .app(app).namespace(namespace).env(env).name(service.getCanonicalName()).build();
         List<InstanceMeta> providers = rc.fetchAll(serviceName);
-        System.out.println(" =====> map to providers: " + providers);
+        log.info(" =====> map to providers: " + providers);
         providers.forEach(System.out::println);
 
         rc.subscribe(serviceName, event -> {
