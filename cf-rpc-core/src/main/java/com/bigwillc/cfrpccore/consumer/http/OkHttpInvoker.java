@@ -14,6 +14,8 @@ import java.io.IOException;
 import java.util.concurrent.TimeUnit;
 
 /**
+ * OKHttp invoker
+ *
  * @author bigwillc on 2024/3/20
  */
 @Slf4j
@@ -45,7 +47,7 @@ public class OkHttpInvoker implements HttpInvoker {
             RpcResponse<Object> rpcResponse = JSON.parseObject(respJson, RpcResponse.class);
             return rpcResponse;
         } catch (IOException e) {
-            e.printStackTrace();
+//            e.printStackTrace();
             throw new RuntimeException(e);
         }
     }

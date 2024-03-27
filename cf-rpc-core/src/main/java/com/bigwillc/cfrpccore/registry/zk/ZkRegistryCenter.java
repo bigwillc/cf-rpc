@@ -1,5 +1,6 @@
 package com.bigwillc.cfrpccore.registry.zk;
 
+import com.bigwillc.cfrpccore.api.RpcException;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
@@ -65,7 +66,7 @@ public class ZkRegistryCenter implements RegistryCenter {
             log.info(" =====> register to zk：" + instancePath);
             client.create().withMode(CreateMode.EPHEMERAL).forPath(instancePath, "provider".getBytes());
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 
@@ -81,7 +82,7 @@ public class ZkRegistryCenter implements RegistryCenter {
             log.info(" =====> unregister from zk：" + instancePath);
             client.delete().quietly().forPath(instancePath);
         }catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 
@@ -97,7 +98,7 @@ public class ZkRegistryCenter implements RegistryCenter {
             return mapInstances(nodes);
 
         } catch (Exception e) {
-            throw new RuntimeException(e);
+            throw new RpcException(e);
         }
     }
 

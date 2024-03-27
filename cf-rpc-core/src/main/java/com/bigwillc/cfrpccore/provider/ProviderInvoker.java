@@ -1,5 +1,6 @@
 package com.bigwillc.cfrpccore.provider;
 
+import com.bigwillc.cfrpccore.api.RpcException;
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
 import com.bigwillc.cfrpccore.meta.ProviderMeta;
@@ -38,9 +39,9 @@ public class ProviderInvoker {
             rpcResponse.setData(result);
             return rpcResponse;
         } catch (InvocationTargetException e) {
-            rpcResponse.setEx(new RuntimeException(e.getTargetException().getMessage()));
+            rpcResponse.setEx(new RpcException(e.getTargetException().getMessage()));
         } catch (IllegalAccessException e) {
-            rpcResponse.setEx(new RuntimeException(e.getMessage()));
+            rpcResponse.setEx(new RpcException(e.getMessage()));
         }
         return rpcResponse;
     }

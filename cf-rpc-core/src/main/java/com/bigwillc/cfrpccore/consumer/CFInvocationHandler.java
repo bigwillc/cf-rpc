@@ -1,22 +1,15 @@
 package com.bigwillc.cfrpccore.consumer;
 
-import com.alibaba.fastjson.JSON;
-import com.alibaba.fastjson.JSONArray;
-import com.alibaba.fastjson.JSONObject;
 import com.bigwillc.cfrpccore.api.*;
 import com.bigwillc.cfrpccore.consumer.http.OkHttpInvoker;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.util.MethodUtils;
-import com.bigwillc.cfrpccore.util.TypeUtils;
 import lombok.extern.slf4j.Slf4j;
-import okhttp3.*;
 import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.util.*;
-import java.util.concurrent.TimeUnit;
 
-import static com.bigwillc.cfrpccore.util.MethodUtils.castMethodResult;
 import static com.bigwillc.cfrpccore.util.TypeUtils.cast;
 
 /**
@@ -88,7 +81,12 @@ public class CFInvocationHandler implements InvocationHandler {
         } else {
             Exception ex = rpcResponse.getEx();
 //            ex.printStackTrace();
-            throw new RuntimeException(ex);
+//            throw new RuntimeException(ex);
+            if (ex instanceof RpcException exception) {
+                throw exception;
+            } else {
+                throw new RpcException(ex, RpcException.NoSuchMethodEx);
+            }
         }
     }
 
