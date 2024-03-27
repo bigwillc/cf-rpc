@@ -1,7 +1,0 @@
-registry:
-  center: zookeeper
-
-logging:
-  level:
-    root: INFO
-    com.bigwillc.cfrpccore: debug
