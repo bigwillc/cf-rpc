@@ -6,6 +6,7 @@ import com.bigwillc.cfrpcdemoapi.OrderService;
 import com.bigwillc.cfrpcdemoapi.User;
 import com.bigwillc.cfrpcdemoapi.UserService;
 import lombok.extern.slf4j.Slf4j;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
@@ -36,9 +37,16 @@ public class CfRpcDemoConsumerApplication {
 
 	@GetMapping("/")
 	@ResponseBody
-	public User findById(int id) {
+	public User findById(@RequestParam(value = "id") int id) {
 		log.info("测试负载均衡...");
 		return userService.findById(id);
+	}
+
+	@GetMapping("/find")
+	@ResponseBody
+	public User findTimeout(@RequestParam(value = "timeout") int timeout) {
+		log.info("测试负载均衡...");
+		return userService.find(timeout);
 	}
 
 
@@ -48,7 +56,25 @@ public class CfRpcDemoConsumerApplication {
 
 	@Bean
 	public ApplicationRunner consumer_runner() {
+
+
 		return x -> {
+
+			// rpcContext.set 需要考虑使用ThreadLocal
+			long stat = System.currentTimeMillis();
+			userService.find(800);
+			System.out.println("Time: " + (System.currentTimeMillis() - stat));
+		};
+
+
+
+//		return allTest();
+	}
+
+
+	@NotNull
+	private ApplicationRunner allTest() {
+
 			// 常规int类型，返回User对象
 			System.out.println("Case 1. >>===[常规int类型，返回User对象]===");
 			User user = userService.findById(1);
@@ -82,7 +108,7 @@ public class CfRpcDemoConsumerApplication {
 			// 测试参数是User类型
 			System.out.println("Case 8. >>===[测试参数是User类型]===");
 			System.out.println("userService.getId(new User(100,\"KK\")) = " +
-					userService.getId(new User(100,"KK")));
+					userService.getId(new User(100, "KK")));
 
 
 //			System.out.println("Case 9. >>===[测试返回long[]]===");
@@ -137,10 +163,8 @@ public class CfRpcDemoConsumerApplication {
 //			} catch (RuntimeException e) {
 //				System.out.println(" ===> exception: " + e.getMessage());
 //			}
-
-		};
+		return null;
 	}
-
 
 
 }

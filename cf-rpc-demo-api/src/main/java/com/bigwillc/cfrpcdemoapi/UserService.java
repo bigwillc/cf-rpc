@@ -35,4 +35,8 @@ public interface UserService {
     boolean getFlag(boolean flag);
     User[] findUsers(User[] users);
 
+    User ex(boolean flag);
+
+    User find(int timeout);
+
 }

@@ -10,8 +10,10 @@ app:
   id: app1
   namespace: public
   env: dev
+  retries: 1
+  timeout: 1000
 
 logging:
   level:
     root: INFO
-    com.bigwillc.cfrpcdemoconsumer: debug
+    com.bigwillc: debug

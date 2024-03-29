@@ -43,6 +43,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     @Value("${app.env}")
     private String env;
 
+    @Value("${app.retries}")
+    private String retries;
+
+    @Value("${app.timeout}")
+    private String timeout;
+
     private Map<String, Object> stub = new HashMap<>();
 
     public void start(){
@@ -56,6 +62,8 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         context.setRouter(router);
         context.setLoadBalancer(loadBalancer);
         context.setFilters(filters);
+        context.getParameters().put("app.retries", retries);
+        context.getParameters().put("app.timeout", timeout);
 
 //        String urls = environment.getProperty("cfrpc.providers", "");
 //        if (Strings.isEmpty(urls)) {

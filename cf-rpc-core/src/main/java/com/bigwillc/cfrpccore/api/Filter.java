@@ -18,8 +18,8 @@ public interface Filter {
         }
 
         @Override
-        public RpcResponse postFilter(RpcRequest request, RpcResponse rpcResponse, Object result) {
-            return null;
+        public Object postFilter(RpcRequest request, RpcResponse rpcResponse, Object result) {
+            return result;
         }
     };
 }
