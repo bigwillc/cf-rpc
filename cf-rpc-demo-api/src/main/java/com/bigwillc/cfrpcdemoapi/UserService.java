@@ -39,4 +39,6 @@ public interface UserService {
 
     User find(int timeout);
 
+    String setTimeoutPort(String timeoutPort);
+
 }

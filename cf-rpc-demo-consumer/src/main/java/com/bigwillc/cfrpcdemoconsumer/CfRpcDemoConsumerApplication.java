@@ -49,6 +49,13 @@ public class CfRpcDemoConsumerApplication {
 		return userService.find(timeout);
 	}
 
+	@GetMapping("/settimeport")
+	@ResponseBody
+	public String setTimeoutPort(@RequestParam(value = "timeoutport") String timeoutPort) {
+		log.info("测试负载均衡...");
+		return userService.setTimeoutPort(timeoutPort);
+	}
+
 
 	public static void main(String[] args) {
 		SpringApplication.run(CfRpcDemoConsumerApplication.class, args);

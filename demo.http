@@ -4,6 +4,9 @@ GET http://localhost:8080/?id=100
 ### 测试超时异常
 GET http://localhost:8080/find?timeout=2100
 
+### 测试修改故障端口
+GET http://localhost:8080/settimeport?timeoutport=8084,8085
+
 ### 获取用户信息
 POST http://localhost:8080/
 Content-Type: application/json

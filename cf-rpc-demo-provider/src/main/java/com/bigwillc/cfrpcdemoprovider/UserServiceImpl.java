@@ -3,10 +3,12 @@ package com.bigwillc.cfrpcdemoprovider;
 import com.bigwillc.cfrpccore.annotation.CFProvider;
 import com.bigwillc.cfrpcdemoapi.User;
 import com.bigwillc.cfrpcdemoapi.UserService;
+import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
@@ -113,10 +115,12 @@ public class UserServiceImpl implements UserService {
         return new User(1002, "CF1002");
     }
 
+    String timeoutPorts = "8081,8085";
+
     @Override
     public User find(int timeout) {
         String port = environment.getProperty("server.port");
-        if ("8081".equals(port)) {
+        if (Arrays.stream(timeoutPorts.split(",")).anyMatch(port::equals)) {
             try {
                 Thread.sleep(timeout);
             } catch (Exception e) {
@@ -125,6 +129,16 @@ public class UserServiceImpl implements UserService {
 
         }
         return new User(1001, "CF1001" + "_" + port);
+    }
+
+    @Override
+    public String setTimeoutPort(String timeoutPort) {
+        setTimeoutPorts(timeoutPort);
+        return timeoutPort + "modify success!";
+    }
+
+    public void setTimeoutPorts(String timeoutPorts) {
+        this.timeoutPorts = timeoutPorts;
     }
 
 
