@@ -1,6 +1,8 @@
 package com.bigwillc.cfrpcdemoconsumer;
 
 import com.bigwillc.cfrpccore.annotation.CFConsumer;
+import com.bigwillc.cfrpccore.api.Router;
+import com.bigwillc.cfrpccore.cluster.GrayRouter;
 import com.bigwillc.cfrpccore.consumer.ConsumerConfig;
 import com.bigwillc.cfrpcdemoapi.OrderService;
 import com.bigwillc.cfrpcdemoapi.User;
@@ -49,6 +51,18 @@ public class CfRpcDemoConsumerApplication {
 		return userService.find(timeout);
 	}
 
+
+	@Autowired
+	Router router;
+
+	@GetMapping("/gray")
+	@ResponseBody
+	public String gray(@RequestParam(value = "gray") int ratio) {
+		((GrayRouter)router).setGrayRatio(ratio);
+		log.info("调整灰度率：{}", ratio);
+		return "Ok-new grey ratio is " + ratio;
+	}
+
 	@GetMapping("/settimeport")
 	@ResponseBody
 	public String setTimeoutPort(@RequestParam(value = "timeoutport") String timeoutPort) {
@@ -63,18 +77,15 @@ public class CfRpcDemoConsumerApplication {
 
 	@Bean
 	public ApplicationRunner consumer_runner() {
-
-
-		return x -> {
-
-			// rpcContext.set 需要考虑使用ThreadLocal
-			long stat = System.currentTimeMillis();
-			userService.find(800);
-			System.out.println("Time: " + (System.currentTimeMillis() - stat));
-		};
-
-
-
+//
+//		return x -> {
+//
+//			// rpcContext.set 需要考虑使用ThreadLocal
+//			long stat = System.currentTimeMillis();
+//			userService.find(800);
+//			System.out.println("Time: " + (System.currentTimeMillis() - stat));
+//		};
+		return x -> allTest();
 //		return allTest();
 	}
 
@@ -101,8 +112,8 @@ public class CfRpcDemoConsumerApplication {
 			System.out.println("userService.getName(123) = " + userService.getName(123));
 
 			// 测试local toString方法
-//			System.out.println("Case 5. >>===[测试local toString方法]===");
-//			System.out.println("userService.toString() = " + userService.toString());
+			System.out.println("Case 5. >>===[测试local toString方法]===");
+			System.out.println("userService.toString() = " + userService.toString());
 
 			// 测试long类型
 			System.out.println("Case 6. >>===[常规int类型，返回User对象]===");
@@ -112,12 +123,11 @@ public class CfRpcDemoConsumerApplication {
 			System.out.println("Case 7. >>===[测试long+float类型]===");
 			System.out.println("userService.getId(10f) = " + userService.getId(10f));
 
-			// 测试参数是User类型
-			System.out.println("Case 8. >>===[测试参数是User类型]===");
-			System.out.println("userService.getId(new User(100,\"KK\")) = " +
-					userService.getId(new User(100, "KK")));
-
-
+//			// 测试参数是User类型
+//			System.out.println("Case 8. >>===[测试参数是User类型]===");
+//			System.out.println("userService.getId(new User(100,\"KK\")) = " +
+//					userService.getId(new User(100, "KK")));
+//
 //			System.out.println("Case 9. >>===[测试返回long[]]===");
 //			System.out.println(" ===> userService.getLongIds(): ");
 //			for (long id : userService.getLongIds()) {
@@ -155,10 +165,10 @@ public class CfRpcDemoConsumerApplication {
 //					new User(101, "KK101")};
 //			Arrays.stream(userService.findUsers(users)).forEach(System.out::println);
 //
-//			System.out.println("Case 15. >>===[测试参数为long，返回值是User类型]===");
-//			User userLong = userService.findById(10000L);
-//			System.out.println(userLong);
-
+////			System.out.println("Case 15. >>===[测试参数为long，返回值是User类型]===");
+////			User userLong = userService.findById(10000L);
+////			System.out.println(userLong);
+//
 //			System.out.println("Case 16. >>===[测试参数为boolean，返回值都是User类型]===");
 //			User user100 = userService.ex(false);
 //			System.out.println(user100);

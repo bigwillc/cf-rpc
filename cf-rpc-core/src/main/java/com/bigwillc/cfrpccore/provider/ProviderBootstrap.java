@@ -55,6 +55,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @Value("${app.env}")
     private String env;
 
+    @Value("#{${app.metas}}")
+    Map<String, String> metas;
+
     @SneakyThrows
     @PostConstruct // 加载的时候，spring 还未初始化完成
     public void init() {
@@ -72,6 +75,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
         instance = InstanceMeta.http(ip, Integer.parseInt(port));
+        instance.getParameters().putAll(this.metas);
         rc.start();
         skeleton.keySet().forEach(this::registerService);
     }

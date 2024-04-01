@@ -16,6 +16,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 
 import static com.bigwillc.cfrpccore.util.TypeUtils.cast;
+import static com.bigwillc.cfrpccore.util.TypeUtils.castMethodResult;
 
 /**
  * @author bigwillc on 2024/3/10
@@ -162,8 +163,7 @@ public class CFInvocationHandler implements InvocationHandler {
     private static Object castReturnResult(Method method, RpcResponse<?> rpcResponse) {
         if (rpcResponse.isStatus()) {
             Object data = rpcResponse.getData();
-            return MethodUtils.castMethodResult(method, data);
-
+            return castMethodResult(method, data);
         } else {
             Exception ex = rpcResponse.getEx();
 //            ex.printStackTrace();

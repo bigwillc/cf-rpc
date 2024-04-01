@@ -49,6 +49,7 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     @Value("${app.timeout}")
     private String timeout;
 
+
     private Map<String, Object> stub = new HashMap<>();
 
     public void start(){

@@ -10,6 +10,7 @@ app:
   id: app1
   namespace: public
   env: dev
+  metas: "{dc: 'bj', gray: 'false', unit: 'B001'}"
 
 logging:
   level:

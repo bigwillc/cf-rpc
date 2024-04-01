@@ -78,20 +78,18 @@ public class UserServiceImpl implements UserService {
     @Override
     public List<User> getList(List<User> list) {
         // 遍历list，对每个name 拼接“—”加时间戳
-//        list.forEach(user -> {
-//            user.setName(user.getName() + "-" + System.currentTimeMillis());
-//        });
-//        return list;
+        list.forEach(user -> {
+            user.setName(user.getName() + "-" + System.currentTimeMillis());
+        });
         return list;
     }
 
     @Override
     public Map<String, User> getMap(Map<String, User> map) {
         // 遍历map，对每个value 值里面的User拼接“—”加时间戳
-//        map.forEach((k, v) -> {
-//            v.setName(v.getName() + "-" + System.currentTimeMillis());
-//        });
-//        return map;
+        map.forEach((k, v) -> {
+            v.setName(v.getName() + "-" + System.currentTimeMillis());
+        });
         return map;
     }
 

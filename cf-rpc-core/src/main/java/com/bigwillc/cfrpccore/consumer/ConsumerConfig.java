@@ -4,6 +4,7 @@ import com.bigwillc.cfrpccore.api.Filter;
 import com.bigwillc.cfrpccore.api.LoadBalancer;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
+import com.bigwillc.cfrpccore.cluster.GrayRouter;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
 import com.bigwillc.cfrpccore.filter.CacheFilter;
 import com.bigwillc.cfrpccore.filter.MockFilter;
@@ -26,6 +27,9 @@ public class ConsumerConfig {
 
     @Value("${cfrpc.services}")
     String services;
+
+    @Value("${app.grayRatio}")
+    private int grayRatio;
 
     @Bean
     ConsumerBootstrap consumerBootstrap() {
@@ -53,7 +57,8 @@ public class ConsumerConfig {
 
     @Bean
     public Router<InstanceMeta> router() {
-        return Router.Default;
+        return new GrayRouter(grayRatio);
+//        return Router.Default;
     }
 
     @Bean(initMethod = "start", destroyMethod = "stop")
