@@ -2,7 +2,7 @@ package com.bigwillc.cfrpccore.consumer;
 
 import com.bigwillc.cfrpccore.annotation.CFConsumer;
 import com.bigwillc.cfrpccore.api.*;
-import com.bigwillc.cfrpccore.consumer.netty.client.NettyRpcClient;
+import com.bigwillc.cfrpccore.protocol.netty.client.NettyRpcClient;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
 import com.bigwillc.cfrpccore.util.MethodUtils;

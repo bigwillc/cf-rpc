@@ -1,9 +1,9 @@
-package com.bigwillc.cfrpccore.consumer.netty;
+package com.bigwillc.cfrpccore.protocol.netty;
 
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
-import com.bigwillc.cfrpccore.consumer.HttpInvoker;
-import com.bigwillc.cfrpccore.consumer.netty.client.NettyRpcClient;
+import com.bigwillc.cfrpccore.protocol.RpcInvoker;
+import com.bigwillc.cfrpccore.protocol.netty.client.NettyRpcClient;
 
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -13,7 +13,7 @@ import java.util.Map;
 /**
  * @author bigwillc on 2025/3/3
  */
-public class NettyInvoker implements HttpInvoker {
+public class NettyInvoker implements RpcInvoker {
 
     private final int timeout;
 

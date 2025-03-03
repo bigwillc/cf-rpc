@@ -1,4 +1,4 @@
-package com.bigwillc.cfrpccore.consumer.netty.codec;
+package com.bigwillc.cfrpccore.protocol.netty.codec;
 
 import com.alibaba.fastjson.JSON;
 import io.netty.buffer.ByteBuf;

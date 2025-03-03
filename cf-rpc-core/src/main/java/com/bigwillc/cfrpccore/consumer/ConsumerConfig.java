@@ -6,9 +6,6 @@ import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.api.Router;
 import com.bigwillc.cfrpccore.cluster.GrayRouter;
 import com.bigwillc.cfrpccore.cluster.RoundRibbonLoadBalancer;
-import com.bigwillc.cfrpccore.consumer.netty.client.NettyRpcClient;
-import com.bigwillc.cfrpccore.filter.CacheFilter;
-import com.bigwillc.cfrpccore.filter.MockFilter;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
@@ -17,7 +14,6 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.context.annotation.DependsOn;
 import org.springframework.core.annotation.Order;
 
 /**

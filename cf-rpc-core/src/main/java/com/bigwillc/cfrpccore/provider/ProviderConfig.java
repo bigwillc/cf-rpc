@@ -1,7 +1,7 @@
 package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.api.RegistryCenter;
-import com.bigwillc.cfrpccore.consumer.netty.server.NettyRpcServer;
+import com.bigwillc.cfrpccore.protocol.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;

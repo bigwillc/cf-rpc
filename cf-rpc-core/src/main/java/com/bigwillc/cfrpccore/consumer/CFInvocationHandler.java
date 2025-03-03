@@ -1,12 +1,10 @@
 package com.bigwillc.cfrpccore.consumer;
 
 import com.bigwillc.cfrpccore.api.*;
-import com.bigwillc.cfrpccore.consumer.http.OkHttpInvoker;
-import com.bigwillc.cfrpccore.consumer.netty.NettyInvoker;
-import com.bigwillc.cfrpccore.consumer.netty.client.NettyRpcClient;
-import com.bigwillc.cfrpccore.consumer.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.governance.SlidingTimeWindow;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
+import com.bigwillc.cfrpccore.protocol.RpcInvoker;
+import com.bigwillc.cfrpccore.protocol.InvokerFactory;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import lombok.extern.slf4j.Slf4j;
 import org.jetbrains.annotations.Nullable;
@@ -34,7 +32,7 @@ public class CFInvocationHandler implements InvocationHandler {
 
     Map<String, SlidingTimeWindow> windows = new HashMap<>();
 
-    HttpInvoker httpInvoker;
+    RpcInvoker rpcInvoker;
 
     List<InstanceMeta> halfOpenProviders = new ArrayList<>();
 
@@ -45,7 +43,7 @@ public class CFInvocationHandler implements InvocationHandler {
         this.context = context;
         this.providers = providers;
         int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "3000"));
-        this.httpInvoker = InvokerFactory.createInvoker(protocol, timeout);
+        this.rpcInvoker = InvokerFactory.createInvoker(protocol, timeout);
         this.executor = Executors.newScheduledThreadPool(1);
         this.executor.scheduleWithFixedDelay(this::halfOpen, 10, 60, java.util.concurrent.TimeUnit.SECONDS);
     }
@@ -87,19 +85,21 @@ public class CFInvocationHandler implements InvocationHandler {
                 }
 
                 InstanceMeta instance;
-                List<InstanceMeta> instances = context.getRouter().route(providers);
-                instance = context.getLoadBalancer().choose(instances);
-                log.debug(" ===> loadBalancer choose instance: {}", instance);
-//                synchronized (halfOpenProviders) {
-//                    if (halfOpenProviders.isEmpty()) {
-//                        List<InstanceMeta> instances = context.getRouter().route(providers);
-//                        instance = context.getLoadBalancer().choose(instances);
-//                        log.debug(" ===> loadBalancer choose instance: {}", instance);
-//                    } else {
-//                        instance = halfOpenProviders.remove(0);
-//                        log.debug(" ===> check alive instance: {}", instance);
-//                    }
-//                }
+//                log.debug("===> loadBalancer providers: {}", providers);
+//                List<InstanceMeta> instances = context.getRouter().route(providers);
+//                log.debug("===> loadBalancer instances: {}", instances);
+//                instance = context.getLoadBalancer().choose(instances);
+//                log.debug(" ===> loadBalancer choose instance: {}", instance);
+                synchronized (halfOpenProviders) {
+                    if (halfOpenProviders.isEmpty()) {
+                        List<InstanceMeta> instances = context.getRouter().route(providers);
+                        instance = context.getLoadBalancer().choose(instances);
+                        log.debug(" ===> loadBalancer choose instance: {}", instance);
+                    } else {
+                        instance = halfOpenProviders.remove(0);
+                        log.debug(" ===> check alive instance: {}", instance);
+                    }
+                }
 
                 RpcResponse<?> rpcResponse;
                 Object result;
@@ -107,7 +107,7 @@ public class CFInvocationHandler implements InvocationHandler {
                 String url = instance.toUrl();
                 try {
                     // 实现http请求
-                    rpcResponse = httpInvoker.post(rpcRequest, instance.toUrl());
+                    rpcResponse = rpcInvoker.post(rpcRequest, instance.toUrl());
                     result = castReturnResult(method, rpcResponse);
 
                 }catch (Exception e) {
@@ -131,13 +131,13 @@ public class CFInvocationHandler implements InvocationHandler {
                     throw e;
                 }
 
-//                synchronized (providers) {
-//                    if (!providers.contains(instance)) {
-//                        isolatedProviders.remove(instance);
-//                        providers.add(instance);
-//                        log.debug(" ===> instance {} is recovered, isolatedProvider={}, providers={} ", instance, isolatedProviders, providers);
-//                    }
-//                }
+                synchronized (providers) {
+                    if (!providers.contains(instance)) {
+                        isolatedProviders.remove(instance);
+                        providers.add(instance);
+                        log.debug(" ===> instance {} is recovered, isolatedProvider={}, providers={} ", instance, isolatedProviders, providers);
+                    }
+                }
 
                 // 这里拿到的可能不是最终值，需要再设计一下
                 for (Filter filter : this.context.getFilters()) {

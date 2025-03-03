@@ -1,8 +1,8 @@
-package com.bigwillc.cfrpccore.consumer.netty.server;
+package com.bigwillc.cfrpccore.protocol.netty.server;
 
 import com.bigwillc.cfrpccore.api.RpcRequest;
-import com.bigwillc.cfrpccore.consumer.netty.codec.RpcDecoder;
-import com.bigwillc.cfrpccore.consumer.netty.codec.RpcEncoder;
+import com.bigwillc.cfrpccore.protocol.netty.codec.RpcDecoder;
+import com.bigwillc.cfrpccore.protocol.netty.codec.RpcEncoder;
 import io.netty.bootstrap.ServerBootstrap;
 import io.netty.channel.ChannelInitializer;
 import io.netty.channel.ChannelOption;

@@ -1,9 +1,9 @@
-package com.bigwillc.cfrpccore.consumer.http;
+package com.bigwillc.cfrpccore.protocol.http;
 
 import com.alibaba.fastjson.JSON;
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
-import com.bigwillc.cfrpccore.consumer.HttpInvoker;
+import com.bigwillc.cfrpccore.protocol.RpcInvoker;
 import lombok.extern.slf4j.Slf4j;
 import okhttp3.MediaType;
 import okhttp3.OkHttpClient;
@@ -19,7 +19,7 @@ import java.util.concurrent.TimeUnit;
  * @author bigwillc on 2024/3/20
  */
 @Slf4j
-public class OkHttpInvoker implements HttpInvoker {
+public class OkHttpInvoker implements RpcInvoker {
 
     final static MediaType JSONTYPE = MediaType.get("application/json; charset=utf-8");
 

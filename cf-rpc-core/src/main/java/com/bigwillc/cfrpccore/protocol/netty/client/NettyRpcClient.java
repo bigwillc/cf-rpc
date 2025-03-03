@@ -1,9 +1,9 @@
-package com.bigwillc.cfrpccore.consumer.netty.client;
+package com.bigwillc.cfrpccore.protocol.netty.client;
 
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
-import com.bigwillc.cfrpccore.consumer.netty.codec.RpcDecoder;
-import com.bigwillc.cfrpccore.consumer.netty.codec.RpcEncoder;
+import com.bigwillc.cfrpccore.protocol.netty.codec.RpcDecoder;
+import com.bigwillc.cfrpccore.protocol.netty.codec.RpcEncoder;
 import io.netty.bootstrap.Bootstrap;
 import io.netty.channel.Channel;
 import io.netty.channel.ChannelInitializer;
@@ -15,8 +15,6 @@ import io.netty.channel.socket.nio.NioSocketChannel;
 import io.netty.handler.logging.LogLevel;
 import io.netty.handler.logging.LoggingHandler;
 import lombok.extern.slf4j.Slf4j;
-
-import java.util.UUID;
 
 @Slf4j
 public class NettyRpcClient {

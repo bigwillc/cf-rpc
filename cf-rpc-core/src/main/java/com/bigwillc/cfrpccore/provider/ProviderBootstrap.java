@@ -3,11 +3,9 @@ package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.annotation.CFProvider;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
-import com.bigwillc.cfrpccore.consumer.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ProviderMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
-import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -15,11 +13,8 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
-import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
-import org.springframework.context.annotation.Bean;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 

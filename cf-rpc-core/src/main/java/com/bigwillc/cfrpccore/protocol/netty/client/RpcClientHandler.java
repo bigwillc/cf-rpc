@@ -1,4 +1,4 @@
-package com.bigwillc.cfrpccore.consumer.netty.client;
+package com.bigwillc.cfrpccore.protocol.netty.client;
 
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
