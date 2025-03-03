@@ -2,6 +2,9 @@ package com.bigwillc.cfrpccore.consumer;
 
 import com.bigwillc.cfrpccore.api.*;
 import com.bigwillc.cfrpccore.consumer.http.OkHttpInvoker;
+import com.bigwillc.cfrpccore.consumer.netty.NettyInvoker;
+import com.bigwillc.cfrpccore.consumer.netty.client.NettyRpcClient;
+import com.bigwillc.cfrpccore.consumer.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.governance.SlidingTimeWindow;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.util.MethodUtils;
@@ -10,7 +13,6 @@ import org.jetbrains.annotations.Nullable;
 
 import java.lang.reflect.*;
 import java.net.SocketTimeoutException;
-import java.net.URL;
 import java.util.*;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
@@ -38,12 +40,12 @@ public class CFInvocationHandler implements InvocationHandler {
 
     ScheduledExecutorService executor;
 
-    public CFInvocationHandler(Class<?> service, RpcContext context, List<InstanceMeta> providers) {
+    public CFInvocationHandler(Class<?> service, RpcContext context, List<InstanceMeta> providers, String protocol) {
         this.service = service;
         this.context = context;
         this.providers = providers;
-        int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "1000"));
-        this.httpInvoker = new OkHttpInvoker(timeout);
+        int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "3000"));
+        this.httpInvoker = InvokerFactory.createInvoker(protocol, timeout);
         this.executor = Executors.newScheduledThreadPool(1);
         this.executor.scheduleWithFixedDelay(this::halfOpen, 10, 60, java.util.concurrent.TimeUnit.SECONDS);
     }
@@ -85,16 +87,19 @@ public class CFInvocationHandler implements InvocationHandler {
                 }
 
                 InstanceMeta instance;
-                synchronized (halfOpenProviders) {
-                    if (halfOpenProviders.isEmpty()) {
-                        List<InstanceMeta> instances = context.getRouter().route(providers);
-                        instance = context.getLoadBalancer().choose(instances);
-                        log.debug(" ===> loadBalancer choose instance: {}", instance);
-                    } else {
-                        instance = halfOpenProviders.remove(0);
-                        log.debug(" ===> check alive instance: {}", instance);
-                    }
-                }
+                List<InstanceMeta> instances = context.getRouter().route(providers);
+                instance = context.getLoadBalancer().choose(instances);
+                log.debug(" ===> loadBalancer choose instance: {}", instance);
+//                synchronized (halfOpenProviders) {
+//                    if (halfOpenProviders.isEmpty()) {
+//                        List<InstanceMeta> instances = context.getRouter().route(providers);
+//                        instance = context.getLoadBalancer().choose(instances);
+//                        log.debug(" ===> loadBalancer choose instance: {}", instance);
+//                    } else {
+//                        instance = halfOpenProviders.remove(0);
+//                        log.debug(" ===> check alive instance: {}", instance);
+//                    }
+//                }
 
                 RpcResponse<?> rpcResponse;
                 Object result;
@@ -126,13 +131,13 @@ public class CFInvocationHandler implements InvocationHandler {
                     throw e;
                 }
 
-                synchronized (providers) {
-                    if (!providers.contains(instance)) {
-                        isolatedProviders.remove(instance);
-                        providers.add(instance);
-                        log.debug(" ===> instance {} is recovered, isolatedProvider={}, providers={} ", instance, isolatedProviders, providers);
-                    }
-                }
+//                synchronized (providers) {
+//                    if (!providers.contains(instance)) {
+//                        isolatedProviders.remove(instance);
+//                        providers.add(instance);
+//                        log.debug(" ===> instance {} is recovered, isolatedProvider={}, providers={} ", instance, isolatedProviders, providers);
+//                    }
+//                }
 
                 // 这里拿到的可能不是最终值，需要再设计一下
                 for (Filter filter : this.context.getFilters()) {

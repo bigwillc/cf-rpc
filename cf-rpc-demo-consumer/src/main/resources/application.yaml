@@ -5,6 +5,7 @@ cfrpc:
   services: http://localhost:8081, http://localhost:8082
   zkServer: localhost:2181
   zkRoot: cfrpc
+  protocol: netty
 
 app:
   id: app1
@@ -16,5 +17,5 @@ app:
 
 logging:
   level:
-    root: INFO
+    root: info
     com.bigwillc: debug

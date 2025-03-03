@@ -3,6 +3,7 @@ package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.annotation.CFProvider;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
+import com.bigwillc.cfrpccore.consumer.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ProviderMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
@@ -14,8 +15,11 @@ import lombok.Data;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnExpression;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
+import org.springframework.context.annotation.Bean;
 import org.springframework.util.LinkedMultiValueMap;
 import org.springframework.util.MultiValueMap;
 
@@ -43,8 +47,14 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private InstanceMeta instance;
 
+    @Value("${cfrpc.protocol:http}")
+    private String rpcProtocol;
+
     @Value("${server.port}")
     private String port;
+
+    @Value("${netty.server.port}")
+    private String nettyPort;
 
     @Value("${app.id}")
     private String app;
@@ -74,7 +84,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @SneakyThrows
     public void start() {
         String ip = InetAddress.getLocalHost().getHostAddress();
-        instance = InstanceMeta.http(ip, Integer.parseInt(port));
+        String instancePort = "http".equals(rpcProtocol) ? port : nettyPort;
+        instance = InstanceMeta.http(ip, Integer.parseInt(instancePort));
         instance.getParameters().putAll(this.metas);
         rc.start();
         skeleton.keySet().forEach(this::registerService);
@@ -86,6 +97,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
         skeleton.keySet().forEach(this::unregisterService);
         rc.stop();
     }
+
+
 
     private void unregisterService(String service) {
         ServiceMeta serviceMeta = ServiceMeta.builder().app(app).namespace(namespace).env(env).name(service).build();

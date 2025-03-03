@@ -2,14 +2,12 @@ package com.bigwillc.cfrpccore.consumer;
 
 import com.bigwillc.cfrpccore.annotation.CFConsumer;
 import com.bigwillc.cfrpccore.api.*;
+import com.bigwillc.cfrpccore.consumer.netty.client.NettyRpcClient;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
-import com.bigwillc.cfrpccore.registry.ChangeedListener;
-import com.bigwillc.cfrpccore.registry.Event;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.logging.log4j.util.Strings;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.ApplicationContext;
 import org.springframework.context.ApplicationContextAware;
@@ -18,7 +16,6 @@ import org.springframework.core.env.Environment;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Proxy;
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -49,8 +46,13 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
     @Value("${app.timeout}")
     private String timeout;
 
+    @Value("${cfrpc.protocol}")
+    private String protocol;
+
 
     private Map<String, Object> stub = new HashMap<>();
+
+    private Map<String, NettyRpcClient> nettyClient = new HashMap<>();
 
     public void start(){
 
@@ -121,8 +123,12 @@ public class ConsumerBootstrap implements ApplicationContextAware, EnvironmentAw
         return createConsumer(service, context, providers);
     }
 
+    private void initNettyClient(){
+
+    }
+
     private Object createConsumer(Class<?> service, RpcContext rpcContext, List<InstanceMeta> providers) {
-        return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CFInvocationHandler(service, rpcContext, providers));
+        return Proxy.newProxyInstance(service.getClassLoader(), new Class[]{service}, new CFInvocationHandler(service, rpcContext, providers, protocol));
     }
 
 

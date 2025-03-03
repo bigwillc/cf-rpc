@@ -5,6 +5,7 @@ cfrpc:
   service: http://localhost:8081, http://localhost:8082
   zkServer: localhost:2181
   zkRoot: cfrpc
+  protocol: netty
 
 app:
   id: app1
@@ -12,7 +13,11 @@ app:
   env: dev
   metas: "{dc: 'bj', gray: 'false', unit: 'B001'}"
 
+netty:
+  server:
+    port: 8090
+
 logging:
   level:
-    root: INFO
+    root: info
     com.bigwillc: debug

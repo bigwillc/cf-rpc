@@ -6,6 +6,7 @@ import com.bigwillc.cfrpccore.provider.ProviderBootstrap;
 import com.bigwillc.cfrpccore.provider.ProviderConfig;
 import com.bigwillc.cfrpccore.provider.ProviderInvoker;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;

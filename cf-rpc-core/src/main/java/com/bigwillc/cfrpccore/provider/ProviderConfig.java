@@ -1,10 +1,12 @@
 package com.bigwillc.cfrpccore.provider;
 
 import com.bigwillc.cfrpccore.api.RegistryCenter;
+import com.bigwillc.cfrpccore.consumer.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.core.annotation.Order;
@@ -41,5 +43,21 @@ public class ProviderConfig {
         return new ZkRegistryCenter();
     }
 
+    @Bean
+    @ConditionalOnProperty(name = "cfrpc.protocol", havingValue = "netty")
+    public NettyRpcServer rpcServer(@Autowired ProviderBootstrap providerBootstrap) {
+        return new NettyRpcServer(providerBootstrap.getApplicationContext());
+    }
+
+    @Bean
+    @Order(Integer.MIN_VALUE + 1) // Run after providerBootstrap_runner
+    @ConditionalOnProperty(name = "cfrpc.protocol", havingValue = "netty")
+    public ApplicationRunner nettyServerRunner(@Autowired NettyRpcServer rpcServer) {
+        return args -> {
+            log.info("Starting Netty RPC server");
+            rpcServer.start();
+            log.info("Netty RPC server started successfully");
+        };
+    }
 
 }

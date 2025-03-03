@@ -1,5 +1,6 @@
 package com.bigwillc.cfrpccore.provider;
 
+import com.alibaba.fastjson.JSONObject;
 import com.bigwillc.cfrpccore.api.RpcException;
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
@@ -28,6 +29,7 @@ public class ProviderInvoker {
     public RpcResponse<Object> invoke(RpcRequest request) {
 
         RpcResponse<Object> rpcResponse = new RpcResponse();
+        rpcResponse.setId(request.getId());
         List<ProviderMeta> providerMetas = skeleton.get(request.getService());
 
         try {
@@ -59,7 +61,10 @@ public class ProviderInvoker {
 
         Object[] actuals = new Object[args.length];
         for (int i = 0; i < args.length; i++) {
-            actuals[i] = TypeUtils.castGeneric(args[i], parameterTypes[i], genericParameterTypes[i]);
+//            actuals[i] = TypeUtils.castGeneric(args[i], parameterTypes[i], genericParameterTypes[i]);
+
+            // 使用fastjson 将
+            actuals[i] = JSONObject.parseObject(JSONObject.toJSONString(args[i]), genericParameterTypes[i]);
         }
 
         return actuals;
