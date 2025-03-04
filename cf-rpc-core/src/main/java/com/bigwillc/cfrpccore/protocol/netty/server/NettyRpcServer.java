@@ -19,7 +19,7 @@ import org.springframework.context.ApplicationContext;
 @Slf4j
 public class NettyRpcServer {
 
-    @Value("${netty.server.port:8090}")
+    @Value("${cfrpc.netty.port:8090}")
     private int port;
     private final ApplicationContext applicationContext;
 

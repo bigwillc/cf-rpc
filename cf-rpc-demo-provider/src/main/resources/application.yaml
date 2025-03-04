@@ -5,17 +5,15 @@ cfrpc:
   service: http://localhost:8081, http://localhost:8082
   zkServer: localhost:2181
   zkRoot: cfrpc
-  protocol: http
+  protocol: netty
+  netty:
+    port: 8090
 
 app:
   id: app1
   namespace: public
   env: dev
   metas: "{dc: 'bj', gray: 'false', unit: 'B001'}"
-
-netty:
-  server:
-    port: 8090
 
 logging:
   level:
