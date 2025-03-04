@@ -2,6 +2,8 @@
 ## 1. Introduction
 设计一个远程RPC调用框架，支持多种序列化方式
 
+![Architecture.png](doc/images/Architecture.png)
+
 ## 设计前
 - 需求
 - 拓展性
@@ -74,6 +76,14 @@ args：参数
 status: 请求是否成功
 data：请求响应数据
 exception：异常
+### 核心注解
+
+### 功能支持
+1. 负载均衡
+2. 故障隔离
+3. 灰度发布
+4. 限流
+
 
 ### 待琢磨
 1. 类型转换里面，如何处理Map， 和List， 里面设计List 里面包装对象，以及各个类的包装层级
