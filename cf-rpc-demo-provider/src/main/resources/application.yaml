@@ -5,7 +5,7 @@ cfrpc:
   service: http://localhost:8081, http://localhost:8082
   zkServer: localhost:2181
   zkRoot: cfrpc
-  protocol: netty
+  protocol: http
   netty:
     port: 8090
 
@@ -17,5 +17,5 @@ app:
 
 logging:
   level:
-    root: info
-    com.bigwillc: debug
+    root: error
+    com.bigwillc: warn

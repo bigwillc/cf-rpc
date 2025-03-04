@@ -12,8 +12,9 @@ import org.jetbrains.annotations.Nullable;
 import java.lang.reflect.*;
 import java.net.SocketTimeoutException;
 import java.util.*;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
+import java.util.concurrent.*;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import static com.bigwillc.cfrpccore.util.TypeUtils.cast;
 import static com.bigwillc.cfrpccore.util.TypeUtils.castMethodResult;
@@ -24,34 +25,57 @@ import static com.bigwillc.cfrpccore.util.TypeUtils.castMethodResult;
 @Slf4j
 public class CFInvocationHandler implements InvocationHandler {
 
-    Class<?> service;
-    RpcContext context;
-    List<InstanceMeta> providers;
+    private final Class<?> service;
+    private final RpcContext context;
+    private final CopyOnWriteArrayList<InstanceMeta> providers;
 
-    List<InstanceMeta> isolatedProviders = new ArrayList<>();
+    private final CopyOnWriteArrayList<InstanceMeta> isolatedProviders = new CopyOnWriteArrayList<>();
 
-    Map<String, SlidingTimeWindow> windows = new HashMap<>();
+    private final ConcurrentHashMap<String, SlidingTimeWindow> windows = new ConcurrentHashMap<>();
 
-    RpcInvoker rpcInvoker;
+    private final RpcInvoker rpcInvoker;
 
-    List<InstanceMeta> halfOpenProviders = new ArrayList<>();
+    private final CopyOnWriteArrayList<InstanceMeta> halfOpenProviders = new CopyOnWriteArrayList<>();
 
-    ScheduledExecutorService executor;
+    private final ScheduledExecutorService executor;
+
+    private final ReentrantReadWriteLock instancesLock = new ReentrantReadWriteLock();
+
+    private final AtomicInteger currentHalfOpenChecks = new AtomicInteger(0);
+
+    private final int maxConcurrentHalfOpenChecks = 3;
+
+    private final int failureThreshold;
 
     public CFInvocationHandler(Class<?> service, RpcContext context, List<InstanceMeta> providers, String protocol) {
         this.service = service;
         this.context = context;
-        this.providers = providers;
+        this.providers = new CopyOnWriteArrayList<>(providers);
+
+        Map<String, String> parameters = context.getParameters();
         int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "3000"));
+        this.failureThreshold = Integer.parseInt(context.getParameters().getOrDefault("app.failure.threshold", "10"));
+
         this.rpcInvoker = InvokerFactory.createInvoker(protocol, timeout);
-        this.executor = Executors.newScheduledThreadPool(1);
+
+        this.executor = Executors.newScheduledThreadPool(1, r -> {
+            Thread thread = new Thread(r, "half-open-scheduler");
+            thread.setDaemon(true);
+            return thread;
+        });
+
         this.executor.scheduleWithFixedDelay(this::halfOpen, 10, 60, java.util.concurrent.TimeUnit.SECONDS);
     }
 
     private void halfOpen() {
+        if (isolatedProviders.isEmpty()) {
+            return;
+        }
         log.debug(" ===> half open isolated providers: " + halfOpenProviders);
+
+        List<InstanceMeta> candidates = new ArrayList<>(isolatedProviders);
         halfOpenProviders.clear();
-        halfOpenProviders.addAll(isolatedProviders);
+        halfOpenProviders.addAll(candidates);
     }
 
     @Override
@@ -66,95 +90,171 @@ public class CFInvocationHandler implements InvocationHandler {
         rpcRequest.setMethodSign(MethodUtils.methodSign(method));
         rpcRequest.setArgs(args);
 
-
-
+        Map<String, String> parameters = context.getParameters();
         // 添加超时重试机制
-        int retries = Integer.parseInt(context.getParameters().getOrDefault("app.retries", "1"));
-        while (retries-- > 0) {
+        int retries = Integer.parseInt(parameters.getOrDefault("app.retries", "1"));
 
-            log.debug(" ===> retries : " + retries);
+        for (Filter filter : this.context.getFilters()) {
+            Object preResult = filter.preFilter(rpcRequest);
+            if (preResult != null) {
+                log.debug(filter.getClass().getName() + " ===> prefilter " + preResult);
+                return preResult;
+            }
+        }
+
+        Exception lastException = null;
+        while (retries-- > 0) {
+            log.debug(" ===> retries remaining: {} ", retries);
 
             try {
-                // [
-                for (Filter filter : this.context.getFilters()) {
-                    Object preResult = filter.preFilter(rpcRequest);
-                    if (preResult != null) {
-                        log.debug(filter.getClass().getName() + " ===> prefilter " + preResult);
-                        return preResult;
-                    }
+                InstanceMeta instance = selectInstance();
+                if (instance == null) {
+                    throw new RpcException("No available instance", RpcException.NoProviderEx);
                 }
 
-                InstanceMeta instance;
-//                log.debug("===> loadBalancer providers: {}", providers);
-//                List<InstanceMeta> instances = context.getRouter().route(providers);
-//                log.debug("===> loadBalancer instances: {}", instances);
-//                instance = context.getLoadBalancer().choose(instances);
-//                log.debug(" ===> loadBalancer choose instance: {}", instance);
-                synchronized (halfOpenProviders) {
-                    if (halfOpenProviders.isEmpty()) {
-                        List<InstanceMeta> instances = context.getRouter().route(providers);
-                        instance = context.getLoadBalancer().choose(instances);
-                        log.debug(" ===> loadBalancer choose instance: {}", instance);
-                    } else {
-                        instance = halfOpenProviders.remove(0);
-                        log.debug(" ===> check alive instance: {}", instance);
-                    }
-                }
-
-                RpcResponse<?> rpcResponse;
-                Object result;
-
-                String url = instance.toUrl();
                 try {
-                    // 实现http请求
-                    rpcResponse = rpcInvoker.post(rpcRequest, instance.toUrl());
-                    result = castReturnResult(method, rpcResponse);
+                    RpcResponse<?> rpcResponse = rpcInvoker.post(rpcRequest, instance.toUrl());
+                    Object result = castReturnResult(method, rpcResponse);
 
-                }catch (Exception e) {
-                    // 故障的规则统计和隔离
-                    // 每一次异常，记录一次，统计30s的异常数
+                    // If we get here, the call succeeded, so recover the instance if needed
+                    recoverInstanceIfNeeded(instance);
 
-                    // todo 可以加上 synchronized 关键字控制并发
-                    SlidingTimeWindow window = windows.get(url);
-                    if (window == null) {
-                        window = new SlidingTimeWindow();
-                        windows.put(url, window);
+                    // Apply post filters
+                    for (Filter filter : this.context.getFilters()) {
+                        Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
+                        if (filterResult != null) {
+                            return filterResult;
+                        }
                     }
 
-                    window.record(System.currentTimeMillis());
-                    log.debug("===>instance {} in window with {}", url, window.getSum());
-                    // 发生了10次，就做故障隔离
-                    if ( window.getSum() > 10) {
-                       isolate(instance);
-                    }
+                    return result;
+                }catch(Exception e) {
+                    log.error("RPC call failed", e);
+                    lastException = e;
+                    recordFailure(instance);
 
-                    throw e;
-                }
-
-                synchronized (providers) {
-                    if (!providers.contains(instance)) {
-                        isolatedProviders.remove(instance);
-                        providers.add(instance);
-                        log.debug(" ===> instance {} is recovered, isolatedProvider={}, providers={} ", instance, isolatedProviders, providers);
+                    // Only retry on timeout exceptions
+                    if (!(e.getCause() instanceof SocketTimeoutException)) {
+                        throw e;
                     }
                 }
 
-                // 这里拿到的可能不是最终值，需要再设计一下
-                for (Filter filter : this.context.getFilters()) {
-                    Object filterResult = filter.postFilter(rpcRequest, rpcResponse, result);
-                    if (filterResult != null) {
-                        return filterResult;
-                    }
-                }
+
             } catch (Exception ex) {
+                lastException = ex;
                 if (!(ex.getCause() instanceof SocketTimeoutException)) {
                     throw ex;
                 }
             }
         }
-        //  ]
+
+        // If we get here, all retries failed
+        if (lastException != null) {
+            throw lastException;
+        }
+
         return null;
     }
+
+    /**
+     * Select an instance for the RPC call with non-blocking approach
+     */
+    private InstanceMeta selectInstance() {
+        // First try to get a half-open instance for testing
+        InstanceMeta halfOpenInstance = getHalfOpenInstance();
+        if (halfOpenInstance != null) {
+            return halfOpenInstance;
+        }
+
+        // Otherwise, use regular routing and load balancing
+        if (providers.isEmpty()) {
+            return null;
+        }
+
+        List<InstanceMeta> instances = context.getRouter().route(providers);
+        if (instances.isEmpty()) {
+            return null;
+        }
+
+        return context.getLoadBalancer().choose(instances);
+    }
+
+    private InstanceMeta getHalfOpenInstance() {
+        // Limit the number of concurrent half-open checks
+        if (currentHalfOpenChecks.get() >= maxConcurrentHalfOpenChecks) {
+            return null;
+        }
+
+        // Try to get a half-open instance
+        InstanceMeta instance = null;
+        if (!halfOpenProviders.isEmpty()) {
+            // Non-blocking removal from the list
+            int size = halfOpenProviders.size();
+            if (size > 0 && currentHalfOpenChecks.incrementAndGet() <= maxConcurrentHalfOpenChecks) {
+                try {
+                    if (!halfOpenProviders.isEmpty()) {
+                        instance = halfOpenProviders.remove(0);
+                        log.debug(" ===> check alive instance: {}", instance);
+                    }
+                } catch (IndexOutOfBoundsException e) {
+                    // List might have been modified concurrently, just ignore and continue
+                } finally {
+                    if (instance == null) {
+                        currentHalfOpenChecks.decrementAndGet();
+                    }
+                }
+            } else {
+                currentHalfOpenChecks.decrementAndGet();
+            }
+        }
+
+        return instance;
+    }
+
+
+    /**
+     * Record a failure for an instance and isolate if necessary
+     */
+    private void recordFailure(InstanceMeta instance) {
+        String url = instance.toUrl();
+
+        // Get or create the sliding window for this URL
+        SlidingTimeWindow window = windows.computeIfAbsent(url, k -> new SlidingTimeWindow());
+
+        // Record the failure
+        window.record(System.currentTimeMillis());
+        log.debug("===>instance {} in window with {}", url, window.getSum());
+
+        // Check if we need to isolate this instance
+        if (window.getSum() > failureThreshold) {
+            isolate(instance);
+        }
+    }
+
+
+    /**
+     * Recover an instance if it was previously isolated
+     */
+    private void recoverInstanceIfNeeded(InstanceMeta instance) {
+        // Update instance health information
+        if (halfOpenProviders.remove(instance)) {
+            currentHalfOpenChecks.decrementAndGet();
+        }
+
+        // Check if this instance needs to be recovered
+        if (!providers.contains(instance)) {
+            // Reset the window counter for this instance
+            windows.remove(instance.toUrl());
+
+            // Remove from isolated and add to active
+            isolatedProviders.remove(instance);
+            providers.add(instance);
+
+            log.debug(" ===> instance {} is recovered, isolatedProvider={}, providers={} ",
+                    instance, isolatedProviders, providers);
+        }
+    }
+
 
     private void isolate(InstanceMeta instance) {
         log.debug(" ===> isolate instance: {}", instance);
@@ -177,6 +277,20 @@ public class CFInvocationHandler implements InvocationHandler {
                 throw exception;
             } else {
                 throw new RpcException(ex, RpcException.NoSuchMethodEx);
+            }
+        }
+    }
+
+    public void shutdown() {
+        if (executor != null) {
+            executor.shutdown();
+            try {
+                if (!executor.awaitTermination(5, TimeUnit.SECONDS)) {
+                    executor.shutdownNow();
+                }
+            } catch (InterruptedException e) {
+                executor.shutdownNow();
+                Thread.currentThread().interrupt();
             }
         }
     }
