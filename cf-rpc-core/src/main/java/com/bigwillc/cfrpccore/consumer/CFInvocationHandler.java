@@ -27,7 +27,7 @@ public class CFInvocationHandler implements InvocationHandler {
 
     private final Class<?> service;
     private final RpcContext context;
-    private final CopyOnWriteArrayList<InstanceMeta> providers;
+    private final List<InstanceMeta> providers;
 
     private final CopyOnWriteArrayList<InstanceMeta> isolatedProviders = new CopyOnWriteArrayList<>();
 
@@ -50,7 +50,7 @@ public class CFInvocationHandler implements InvocationHandler {
     public CFInvocationHandler(Class<?> service, RpcContext context, List<InstanceMeta> providers, String protocol) {
         this.service = service;
         this.context = context;
-        this.providers = new CopyOnWriteArrayList<>(providers);
+        this.providers = providers;
 
         Map<String, String> parameters = context.getParameters();
         int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "3000"));
