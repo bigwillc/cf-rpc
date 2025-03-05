@@ -13,9 +13,9 @@ app:
   id: app1
   namespace: public
   env: dev
-  metas: "{dc: 'bj', gray: 'false', unit: 'B001'}"
+  metas: "{dc: 'bj', gray: 'false', unit: 'B001', version: '1.0.0'}"
 
 logging:
   level:
-    root: error
-    com.bigwillc: warn
+    root: info
+    com.bigwillc: debug

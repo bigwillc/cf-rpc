@@ -5,6 +5,7 @@ import com.bigwillc.cfrpcdemoapi.User;
 import com.bigwillc.cfrpcdemoapi.UserService;
 import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;
 import org.springframework.stereotype.Component;
 
@@ -15,6 +16,9 @@ import java.util.Map;
 @Component
 @CFProvider
 public class UserServiceImpl implements UserService {
+
+    @Value("#{${app.metas}}")
+    Map<String, String> metas;
 
     @Autowired
     Environment environment;
@@ -133,6 +137,11 @@ public class UserServiceImpl implements UserService {
     public String setTimeoutPort(String timeoutPort) {
         setTimeoutPorts(timeoutPort);
         return timeoutPort + "modify success!";
+    }
+
+    @Override
+    public String getVersion() {
+        return metas.get("version") + "-" + System.currentTimeMillis();
     }
 
     public void setTimeoutPorts(String timeoutPorts) {

@@ -41,4 +41,6 @@ public interface UserService {
 
     String setTimeoutPort(String timeoutPort);
 
+    String getVersion();
+
 }

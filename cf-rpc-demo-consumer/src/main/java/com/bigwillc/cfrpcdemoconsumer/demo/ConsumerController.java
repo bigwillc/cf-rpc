@@ -122,4 +122,9 @@ public class ConsumerController {
         return new ResponseEntity<>(errorResponse, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
+    @GetMapping("/users/version")
+    public String getVersion() {
+        return userService.getVersion();
+    }
+
 }

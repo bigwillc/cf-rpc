@@ -17,5 +17,5 @@ app:
 
 logging:
   level:
-    root: error
-    com.bigwillc: warn
+    root: info
+    com.bigwillc: debug
