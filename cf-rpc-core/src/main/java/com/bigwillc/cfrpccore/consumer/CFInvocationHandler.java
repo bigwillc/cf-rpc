@@ -54,7 +54,7 @@ public class CFInvocationHandler implements InvocationHandler {
 
         Map<String, String> parameters = context.getParameters();
         int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "3000"));
-        this.failureThreshold = Integer.parseInt(context.getParameters().getOrDefault("app.failure.threshold", "10"));
+        this.failureThreshold = Integer.parseInt(context.getParameters().getOrDefault("app.failure.threshold", "50"));
 
         this.rpcInvoker = InvokerFactory.createInvoker(protocol, timeout);
 
@@ -128,10 +128,10 @@ public class CFInvocationHandler implements InvocationHandler {
                     }
 
                     return result;
-                }catch(Exception e) {
+                } catch(Exception e) {
                     log.error("RPC call failed", e);
                     lastException = e;
-                    recordFailure(instance);
+                    recordFailure(instance, e);
 
                     // Only retry on timeout exceptions
                     if (!(e.getCause() instanceof SocketTimeoutException)) {
@@ -215,7 +215,14 @@ public class CFInvocationHandler implements InvocationHandler {
     /**
      * Record a failure for an instance and isolate if necessary
      */
-    private void recordFailure(InstanceMeta instance) {
+    private void recordFailure(InstanceMeta instance, Exception exception) {
+        if(exception != null && exception.getCause() instanceof RpcException){
+            RpcException rpcException = (RpcException) exception.getCause();
+            if(rpcException.getErrcode().equals(RpcException.RateLimiterEx)){
+                return;
+            }
+        }
+
         String url = instance.toUrl();
 
         // Get or create the sliding window for this URL

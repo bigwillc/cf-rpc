@@ -3,7 +3,6 @@ package com.bigwillc.cfrpcdemoprovider;
 import com.bigwillc.cfrpccore.annotation.CFProvider;
 import com.bigwillc.cfrpcdemoapi.User;
 import com.bigwillc.cfrpcdemoapi.UserService;
-import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.env.Environment;

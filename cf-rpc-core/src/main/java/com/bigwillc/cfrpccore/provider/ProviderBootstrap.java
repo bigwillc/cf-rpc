@@ -6,6 +6,7 @@ import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.meta.InstanceMeta;
 import com.bigwillc.cfrpccore.meta.ProviderMeta;
 import com.bigwillc.cfrpccore.meta.ServiceMeta;
+import com.bigwillc.cfrpccore.ratelimiter.RateLimiterFactory;
 import com.bigwillc.cfrpccore.util.MethodUtils;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
@@ -38,6 +39,8 @@ public class ProviderBootstrap implements ApplicationContextAware {
 
     private MultiValueMap<String, ProviderMeta> skeleton = new LinkedMultiValueMap<>();
 
+    private RateLimiterFactory rateLimiterFactory = new RateLimiterFactory();
+
     RegistryCenter rc;
 
     private InstanceMeta instance;
@@ -67,7 +70,7 @@ public class ProviderBootstrap implements ApplicationContextAware {
     @PostConstruct // 加载的时候，spring 还未初始化完成
     public void init() {
         Map<String, Object> providers = applicationContext.getBeansWithAnnotation(CFProvider.class);
-        providers.forEach((x, y) -> log.info(x));
+        providers.forEach((x,y) -> log.info(x));
         rc = applicationContext.getBean(RegistryCenter.class);
 //		skeleton.putAll(providers);
         // x 是bean 的名字，不是接口
@@ -83,7 +86,9 @@ public class ProviderBootstrap implements ApplicationContextAware {
         instance = InstanceMeta.http(ip, Integer.parseInt(instancePort));
         instance.getParameters().putAll(this.metas);
         rc.start();
-        skeleton.keySet().forEach(this::registerService);
+        skeleton.keySet().forEach(s -> {
+            registerService(s);
+        });
     }
 
     @PreDestroy
@@ -116,26 +121,23 @@ public class ProviderBootstrap implements ApplicationContextAware {
                             continue;
                         }
                         createProvider(server, impl, method);
+                        // initialize rate limiter
+//                        rateLimitInit(server, impl);
                     }
                 }
         );
+    }
 
-        // 获取接口 这里默认指支持一个接口
-//        Class<?> itfer = x.getClass().getInterfaces()[0];
-//        Method[] methods = itfer.getMethods();
-//        for (Method method : methods) {
-//            if(MethodUtils.checkLocalMethod(method)){
-//                continue;
-//            }
-//
-//            createProvider(itfer, x, method);
-//
-//            ProviderMeta providerMeta = new ProviderMeta();
-//            providerMeta.setMethod(method);
-//            providerMeta.setMethodSign(method.getName());
-//            providerMeta.setServiceImpl(x);
-//            skeleton.add(itfer.getCanonicalName(), providerMeta);
-//        }
+    private void rateLimitInit(Class<?> service, Object bean) {
+        Class<?> clazz = bean.getClass();
+        CFProvider annotation = clazz.getAnnotation(CFProvider.class);
+
+        // Initialize rate limiter for this service
+        String serviceName = service.getCanonicalName();
+        boolean rateLimit = annotation.rateLimit();
+        double maxRequestsPerSecond = annotation.maxRequestsPerSecond();
+
+        rateLimiterFactory.initializeRateLimiter(serviceName, rateLimit, maxRequestsPerSecond);
     }
 
     private void createProvider(Class<?> service, Object impl, Method method) {

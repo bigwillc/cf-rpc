@@ -23,8 +23,8 @@ import org.springframework.core.annotation.Order;
 @Slf4j
 public class ConsumerConfig {
 
-    @Value("${cfrpc.services}")
-    String services;
+//    @Value("${cfrpc.services}")
+//    String services;
 
     @Value("${app.grayRatio}")
     private int grayRatio;

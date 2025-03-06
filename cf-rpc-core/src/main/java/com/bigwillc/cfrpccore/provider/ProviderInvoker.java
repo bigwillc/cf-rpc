@@ -5,7 +5,10 @@ import com.bigwillc.cfrpccore.api.RpcException;
 import com.bigwillc.cfrpccore.api.RpcRequest;
 import com.bigwillc.cfrpccore.api.RpcResponse;
 import com.bigwillc.cfrpccore.meta.ProviderMeta;
+import com.bigwillc.cfrpccore.ratelimiter.RateLimiter;
+import com.bigwillc.cfrpccore.ratelimiter.RateLimiterFactory;
 import com.bigwillc.cfrpccore.util.TypeUtils;
+import jakarta.annotation.Resource;
 import org.springframework.util.MultiValueMap;
 
 import java.lang.reflect.InvocationTargetException;
@@ -21,8 +24,12 @@ public class ProviderInvoker {
 
     private MultiValueMap<String, ProviderMeta> skeleton;
 
+//    private RateLimiterFactory rateLimiterFactory;
+
+
     public ProviderInvoker(ProviderBootstrap providerBootstrap) {
         this.skeleton = providerBootstrap.getSkeleton();
+//        this.rateLimiterFactory = providerBootstrap.getRateLimiterFactory();
     }
 
 
@@ -30,7 +37,15 @@ public class ProviderInvoker {
 
         RpcResponse<Object> rpcResponse = new RpcResponse();
         rpcResponse.setId(request.getId());
-        List<ProviderMeta> providerMetas = skeleton.get(request.getService());
+        String service = request.getService();
+        List<ProviderMeta> providerMetas = skeleton.get(service);
+
+//        RateLimiter rateLimiter = rateLimiterFactory.getRateLimiter(service);
+//        if (rateLimiter.isEnabled(service) && !rateLimiter.tryAcquire(service)) {
+//            rpcResponse.setStatus(false);
+//            rpcResponse.setEx(new RpcException("Rate limit exceeded for service: " + service));
+//            return rpcResponse;
+//        }
 
         try {
 

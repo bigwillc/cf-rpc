@@ -50,6 +50,7 @@ public class RpcException extends RuntimeException{
     public static final String NoSuchMethodEx = "X002" + "-" + "method_not_exists";
     public static final String UnknowEx = "Z001" + "-" + "unknown_exception";
     public static final String NoProviderEx = "P001" + "-" + "no_avaliable_provider";
+    public static final String RateLimiterEx = "R001" + "-" + "rate_limiter_exception";
 
 //    UnknownEx("Y", "001", "unknown_exception"),
 }
