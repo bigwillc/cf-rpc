@@ -1,4 +1,5 @@
 
+# CF-RPC
 **CF-RPC** 是一个基于Java开发的远程过程调用（RPC）组件，旨在为开发者提供一个简单、高效且功能丰富的RPC解决方案。该框架支持HTTP和Netty两种远程调用方式，并集成了负载均衡、注册中心、灰度发布、故障隔离、流量控制等高级功能，适用于构建高性能、可扩展的分布式系统。
 
 ## 特性
@@ -125,5 +126,6 @@ rpc.server.port=8080
 
 ## 联系方式
 
-- **作者**: （你的名字或邮箱）
-- **项目地址**: （GitHub或其他仓库链接）
+- **作者**: bigwillc
+- **邮箱**: [cfh870993074@outlook.com](mailto:cfh870993074@outlook.com)
+- **项目地址**: https://github.com/bigwillc/cf-rpc
