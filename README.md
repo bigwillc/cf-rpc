@@ -18,8 +18,17 @@
 
 ## 快速开始
 
-### 安装
+项目启动依赖zookeeper
 
+### 安装
+引入依赖
+```xml
+<dependency>
+    <groupId>io.github.bigwillc</groupId>
+    <artifactId>cf-rpc-core</artifactId>
+    <version>0.0.1-RELEASE</version>
+</dependency>
+```
 
 ### 定义服务
 
@@ -58,12 +67,13 @@ public class UserServiceImpl implements UserService {
 @RestController
 @Slf4j
 public class CfRpcDemoConsumerApplication {
-
-    // 无需实现userService
+    
     @CFConsumer
     UserService userService;
 
-    private void allTest() {
+    // 省略代码
+    
+    private void test() {
         userService.hello("world"); //返回 hello world
     }
 }
@@ -74,9 +84,9 @@ public class CfRpcDemoConsumerApplication {
 
 ```yaml
 cfrpc:
-  zkServer: localhost:2181
+  zkServer: 127.0.0.1:2181
   zkRoot: cfrpc
-  protocol: http  #protocol: http，netty模式使用
+  protocol: netty  #protocol: http，netty模式使用
   netty:
     port: 8090 #netty模式使用，http 方式无需配置netty.port
 ```
