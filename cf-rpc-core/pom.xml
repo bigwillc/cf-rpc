@@ -3,13 +3,13 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.bigwillc</groupId>
+		<groupId>io.github.bigwillc</groupId>
 		<artifactId>cf-rpc</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
+		<version>${cfrpc.version}</version>
 <!--		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
 	</parent>
 	<artifactId>cf-rpc-core</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${cfrpc.version}</version>
 	<name>cf-rpc-core</name>
 	<description>cf-rpc-core</description>
 <!--	<properties>-->

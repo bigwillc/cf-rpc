@@ -3,18 +3,15 @@
 	xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 https://maven.apache.org/xsd/maven-4.0.0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
-		<groupId>com.bigwillc</groupId>
+		<groupId>io.github.bigwillc</groupId>
 		<artifactId>cf-rpc</artifactId>
-		<version>0.0.1-SNAPSHOT</version>
-<!--		<relativePath/> &lt;!&ndash; lookup parent from repository &ndash;&gt;-->
+		<version>${cfrpc.version}</version>
 	</parent>
 	<artifactId>cf-rpc-demo-api</artifactId>
-	<version>0.0.1-SNAPSHOT</version>
+	<version>${cfrpc.version}</version>
 	<name>cf-rpc-demo-api</name>
 	<description>cf-rpc-demo-api</description>
-<!--	<properties>-->
-<!--		<java.version>17</java.version>-->
-<!--	</properties>-->
+
 	<dependencies>
 <!--		<dependency>-->
 <!--			<groupId>org.springframework.boot</groupId>-->
