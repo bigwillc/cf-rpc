@@ -20,27 +20,15 @@
 
 ### 安装
 
-（此处建议补充具体的安装方法，例如从Maven仓库引入依赖或从GitHub克隆源码编译。例如：）
-
-
-```xml
-<!-- 示例：在Maven项目中添加依赖 -->
-<dependency>
-    <groupId>com.example</groupId>
-    <artifactId>java-rpc-framework</artifactId>
-    <version>1.0.0</version>
-</dependency>
-```
 
 ### 定义服务
 
-使用自定义注解 @RpcService 定义一个RPC服务接口：
+定义一个RPC服务接口：
 
 
 ```java
-@RpcService
-public interface HelloService {
-    String sayHello(String name);
+public interface UserService {
+    String hello(String name);
 }
 ```
 
@@ -48,16 +36,14 @@ public interface HelloService {
 
 实现服务接口并使用 @RpcServiceImpl 注解标记服务实现类：
 
-java
-
-CollapseWrapCopy
-
 ```java
-@RpcServiceImpl
-public class HelloServiceImpl implements HelloService {
+@Component
+@CFProvider
+public class UserServiceImpl implements UserService {
+
     @Override
-    public String sayHello(String name) {
-        return "Hello, " + name;
+    public String hello(String name) {
+        return "hello " + name;
     }
 }
 ```
@@ -67,13 +53,18 @@ public class HelloServiceImpl implements HelloService {
 在消费端通过动态代理获取服务实例并调用：
 
 ```java
-public class Client {
-    public static void main(String[] args) {
-        // 创建代理对象
-        HelloService helloService = RpcProxy.create(HelloService.class);
-        // 调用远程服务
-        String result = helloService.sayHello("World");
-        System.out.println(result); // 输出: Hello, World
+@SpringBootApplication
+@Import({ConsumerConfig.class})
+@RestController
+@Slf4j
+public class CfRpcDemoConsumerApplication {
+
+    // 无需实现userService
+    @CFConsumer
+    UserService userService;
+
+    private void allTest() {
+        userService.hello("world"); //返回 hello world
     }
 }
 ```
@@ -82,9 +73,12 @@ public class Client {
 在配置文件（如 rpc.properties）中指定使用HTTP或Netty作为传输协议：
 
 ```yaml
-rpc.transport=netty  # 可选值: http 或 netty
-rpc.server.host=localhost
-rpc.server.port=8080
+cfrpc:
+  zkServer: localhost:2181
+  zkRoot: cfrpc
+  protocol: http  #protocol: http，netty模式使用
+  netty:
+    port: 8090 #netty模式使用，http 方式无需配置netty.port
 ```
 启动服务端和客户端即可完成远程调用。
 
@@ -106,17 +100,11 @@ rpc.server.port=8080
 
 ## 详细文档
 
-（建议补充更详细的配置说明、API文档或完整示例代码。例如负载均衡策略配置、注册中心集成方式等。）
+（待补充更详细的配置说明、API文档或完整示例代码。例如负载均衡策略配置、注册中心集成方式等。）
 
 ## 贡献指南
 
-欢迎对本项目提出建议或贡献代码！请按照以下步骤参与：
-
-1. Fork 本仓库。
-2. 创建你的功能分支（git checkout -b feature/AmazingFeature）。
-3. 提交你的更改（git commit -m 'Add some AmazingFeature'）。
-4. 推送到远程分支（git push origin feature/AmazingFeature）。
-5. 创建一个Pull Request。
+欢迎对本项目提出建议或贡献代码！
 
 ## 许可证
 
