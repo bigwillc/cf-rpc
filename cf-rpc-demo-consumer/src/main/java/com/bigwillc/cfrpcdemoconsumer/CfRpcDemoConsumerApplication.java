@@ -77,14 +77,6 @@ public class CfRpcDemoConsumerApplication {
 
 	@Bean
 	public ApplicationRunner consumer_runner() {
-//
-//		return x -> {
-//
-//			// rpcContext.set 需要考虑使用ThreadLocal
-//			long stat = System.currentTimeMillis();
-//			userService.find(800);
-//			System.out.println("Time: " + (System.currentTimeMillis() - stat));
-//		};
 		return x -> {
 			allTest();
 		};

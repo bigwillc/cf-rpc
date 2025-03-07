@@ -5,7 +5,7 @@ cfrpc:
   zkServer: localhost:2181
   zkRoot: cfrpc
   # protocol: http, netty
-  protocol: http
+  protocol: netty
 
 app:
   id: app1
