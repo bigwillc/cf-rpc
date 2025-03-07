@@ -16,7 +16,7 @@
 		<dependency>
 			<groupId>io.github.bigwillc</groupId>
 			<artifactId>cf-rpc-demo-api</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
+			<version>${cfrpc.version}</version>
 		</dependency>
 
 		<dependency>
@@ -40,8 +40,7 @@
 		<dependency>
 			<groupId>io.github.bigwillc</groupId>
 			<artifactId>cf-rpc-core</artifactId>
-			<version>0.0.1-SNAPSHOT</version>
-			<scope>compile</scope>
+			<version>${cfrpc.version}</version>
 		</dependency>
 	</dependencies>
 

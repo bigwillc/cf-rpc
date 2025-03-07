@@ -3,16 +3,19 @@ package com.bigwillc.cfrpccore.provider;
 import com.bigwillc.cfrpccore.api.RegistryCenter;
 import com.bigwillc.cfrpccore.protocol.netty.server.NettyRpcServer;
 import com.bigwillc.cfrpccore.registry.zk.ZkRegistryCenter;
+import com.bigwillc.cfrpccore.transport.SpringBootTransport;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.ApplicationRunner;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.Import;
 import org.springframework.core.annotation.Order;
 
 @Configuration
 @Slf4j
+@Import({SpringBootTransport.class})
 public class ProviderConfig {
 
     @Bean

@@ -39,7 +39,7 @@
     </developers>
 
     <properties>
-        <cfrpc.version>0.0.1-SNAPSHOT</cfrpc.version>
+        <cfrpc.version>0.0.2-BETA</cfrpc.version>
         <java.version>17</java.version>
         <maven.compiler.source>17</maven.compiler.source>
         <maven.compiler.target>17</maven.compiler.target>
@@ -119,26 +119,19 @@
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.1.0</version>
-                <inherited>true</inherited>
+                <version>3.4.1</version>
                 <executions>
                     <execution>
-                        <id>bundle-sources</id>
-                        <phase>package</phase>
+                        <id>attach-javadocs</id>
                         <goals>
                             <goal>jar</goal>
                         </goals>
                     </execution>
                 </executions>
                 <configuration>
-                    <maxmemory>1024</maxmemory>
-                    <encoding>UTF-8</encoding>
-                    <show>protected</show>
-                    <notree>true</notree>
-
-                    <!-- Avoid running into Java 8's very restrictive doclint issues -->
+                    <additionalOptions>-Xdoclint:none</additionalOptions>
                     <failOnError>false</failOnError>
-                    <doclint>none</doclint>
+                    <encoding>UTF-8</encoding>
                 </configuration>
             </plugin>
 
@@ -212,6 +205,9 @@
                         <groupId>org.apache.maven.plugins</groupId>
                         <artifactId>maven-gpg-plugin</artifactId>
                         <version>1.6</version>
+                        <configuration>
+                            <executable>/usr/local/bin/gpg</executable>
+                        </configuration>
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
@@ -230,7 +226,7 @@
                         <version>0.4.0</version>
                         <extensions>true</extensions>
                         <configuration>
-                            <publishingServerId>central</publishingServerId>
+                            <publishingServerId>bigwillc</publishingServerId>
                             <tokenAuth>true</tokenAuth>
                             <autoPublish>true</autoPublish>
                             <excludeArtifacts>

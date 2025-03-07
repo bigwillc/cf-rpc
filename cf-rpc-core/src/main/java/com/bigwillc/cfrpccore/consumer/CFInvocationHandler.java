@@ -53,7 +53,7 @@ public class CFInvocationHandler implements InvocationHandler {
         this.providers = providers;
 
         Map<String, String> parameters = context.getParameters();
-        int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "3000"));
+        int timeout = Integer.parseInt(context.getParameters().getOrDefault("app.timeout", "5000"));
         this.failureThreshold = Integer.parseInt(context.getParameters().getOrDefault("app.failure.threshold", "50"));
 
         this.rpcInvoker = InvokerFactory.createInvoker(protocol, timeout);

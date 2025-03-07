@@ -25,36 +25,4 @@ public class CfRpcDemoProviderApplication {
         SpringApplication.run(CfRpcDemoProviderApplication.class, args);
     }
 
-    // 使用http + json 来实现序列化和通信
-
-    @Autowired
-    ProviderInvoker providerInvoker;
-
-    @RequestMapping("/")
-    public RpcResponse invoke(@RequestBody RpcRequest request) {
-        return providerInvoker.invoke(request);
-    }
-
-
-    @Bean
-    ApplicationRunner providerRun() {
-        return x -> {
-            RpcRequest request = new RpcRequest();
-            request.setService("com.bigwillc.cfrpcdemoapi.UserService");
-            request.setMethodSign("findById@1_int");
-            request.setArgs(new Object[]{100});
-
-            RpcResponse rpcResponse = invoke(request);
-            System.out.println("return: " + rpcResponse);
-
-            RpcRequest request2 = new RpcRequest();
-            request2.setService("com.bigwillc.cfrpcdemoapi.UserService");
-            request2.setMethodSign("findById@2_int_java.lang.String");
-            request2.setArgs(new Object[]{100, "bigwillc"});
-
-            RpcResponse rpcResponse2 = invoke(request2);
-            System.out.println("return: " + rpcResponse2);
-        };
-    }
-
 }
