@@ -4,7 +4,9 @@ server:
 cfrpc:
   zkServer: localhost:2181
   zkRoot: cfrpc
-  protocol: netty
+  # protocol: http，netty模式使用
+  protocol: http
+  #  netty模式使用，http 方式无需配置netty.port
   netty:
     port: 8090
 

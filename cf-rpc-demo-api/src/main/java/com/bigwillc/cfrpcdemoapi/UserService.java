@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.Map;
 
 public interface UserService {
+
+    String hello(String name);
+
     User findById(int id);
 
     User findById(long id);

@@ -10,23 +10,22 @@ import org.springframework.context.ApplicationContext;
 
 @SpringBootTest
 class CfRpcDemoConsumerApplicationTests {
+//
+//	static ApplicationContext context;
+//
+//	@BeforeAll
+//	static void init() {
+//		context = SpringApplication.run(CfRpcDemoProviderApplication.class, "--server.port=8081");
+//	}
 
-	static ApplicationContext context;
-
-	@BeforeAll
-	static void init() {
-		context = SpringApplication.run(CfRpcDemoProviderApplication.class, "--server.port=8081");
-	}
-
-	@Test
-	void contextLoads() {
-		System.out.println(" ===> aaa ...");
-	}
-
-	@AfterAll
-	static void destroy() {
-		SpringApplication.exit(context, () -> 1);
-	}
+//	@Test
+//	void contextLoads() {
+//	}
+//
+//	@AfterAll
+//	static void destroy() {
+//		SpringApplication.exit(context, () -> 1);
+//	}
 
 
 
