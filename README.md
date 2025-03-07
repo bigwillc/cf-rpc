@@ -8,28 +8,28 @@
 - **动态代理**：消费端使用动态代理实现透明的远程调用，隐藏网络通信细节。
 - **支持方法重载**：支持处理具有相同方法名但参数不同的方法。
 - **JSON序列化**：使用JSON作为数据交换格式，轻量且易于调试。
-- **支持多种数据类型**：支持Java基础类型（如int、String）以及复杂类型（如数组、List、Map）作为参数。
 - **负载均衡与注册中心**：集成负载均衡策略和服务注册中心，支持高可用性部署。
 - **灰度发布**：支持灰度发布功能，实现服务的平滑升级。
 - **故障隔离与恢复**：具备故障隔离和自动恢复能力，提升系统可靠性。
 - **接口级流量控制**：支持接口级别的流控，防止服务过载。
 - **多种传输协议**：支持HTTP和Netty两种传输方式，可通过配置文件灵活切换。
-- **测试支持**：提供丰富的测试案例，确保组件的稳定性和功能完整性。
 
 ## 快速开始
-
-项目启动依赖zookeeper
-
-### 安装
-引入依赖
-```xml
-<dependency>
-    <groupId>io.github.bigwillc</groupId>
-    <artifactId>cf-rpc-core</artifactId>
-    <version>0.0.1-RELEASE</version>
-</dependency>
+```bash
+cf-rpc  # 根目录（Maven 多模块项目）
+├── .idea  # IntelliJ IDEA 项目配置文件夹
+├── cf-rpc-core  # 核心模块，可能包含核心业务逻辑或通用组件
+├── cf-rpc-demo-api  # API 模块，通常用于定义接口
+├── cf-rpc-demo-consumer  # 消费者模块，可能是客户端调用方
+├── cf-rpc-demo-provider  # 服务提供者模块，可能是服务器端
+├── doc  # 文档文件夹
+├── .gitignore  # Git 忽略文件配置
+├── pom.xml  # 父类 Maven 配置文件（父 POM）
+└── README.md  
 ```
+cf-rpc-demo-consumer 模块提供测试用例，可以用于演示CF-RPC的使用方法。
 
+项目启动依赖zookeeper; 注册中心功能下次实现。
 ### 定义服务
 
 定义一个RPC服务接口：
@@ -54,6 +54,8 @@ public class UserServiceImpl implements UserService {
     public String hello(String name) {
         return "hello " + name;
     }
+    
+    // 其他方法
 }
 ```
 
@@ -71,16 +73,28 @@ public class CfRpcDemoConsumerApplication {
     @CFConsumer
     UserService userService;
 
-    // 省略代码
-    
-    private void test() {
-        userService.hello("world"); //返回 hello world
+    public static void main(String[] args) {
+        SpringApplication.run(CfRpcDemoConsumerApplication.class, args);
+    }
+
+    @Bean
+    public ApplicationRunner consumer_runner() {
+        return x -> {
+            allTest();
+        };
+    }
+
+    private void allTest() {
+        String result = userService.hello("world");
+        log.info("result: {}", result);
+        
+        // 其他测试示例
     }
 }
 ```
 ### 配置传输协议
 
-在配置文件（如 rpc.properties）中指定使用HTTP或Netty作为传输协议：
+在配置文件（如 application.yaml）中指定使用HTTP或Netty作为传输协议：
 
 ```yaml
 cfrpc:
@@ -107,6 +121,13 @@ cfrpc:
 
 
 **分析**：Netty传输协议在高并发场景下表现出色，相比HTTP具有更低的延迟和更高的吞吐量，适合对性能要求较高的应用场景。
+
+**测试方法**：
+
+命令：wrk -t8 -c50 -d30s -s wrk_benchmark.lua http://localhost:8080
+
+脚本：
+[wrk_benchmark.lua](cf-rpc-demo-consumer%2Fsrc%2Fmain%2Fresources%2Fwrk_benchmark.lua)
 
 ## 详细文档
 
